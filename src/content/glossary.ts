@@ -1,0 +1,47 @@
+import type { T } from "../i18n";
+
+export interface Term {
+  term: string;
+  track: "data" | "sql" | "engineering" | "ml" | "llm";
+  meaning: T;
+}
+
+export const GLOSSARY: Term[] = [
+  { term: "Dataset", track: "data", meaning: { en: "A collection of data, usually a table: rows are records (one customer), columns are details (name, age).", bn: "ডেটার একটা সংগ্রহ, সাধারণত টেবিল: সারি মানে একটা রেকর্ড (একজন গ্রাহক), কলাম মানে বিবরণ (নাম, বয়স)।" } },
+  { term: "Mean / Median", track: "data", meaning: { en: "Mean = add everything and divide. Median = the middle value after sorting. Median is safer when a few values are extreme.", bn: "গড় (mean) = সব যোগ করে ভাগ। মধ্যমা (median) = সাজানোর পর ঠিক মাঝের মান। কিছু মান খুব বড় বা ছোট হলে মধ্যমা বেশি নির্ভরযোগ্য।" } },
+  { term: "Outlier", track: "data", meaning: { en: "A value far away from the rest, like one customer earning 50× more than everyone else.", bn: "বাকিদের থেকে অনেক দূরের একটা মান, যেমন একজন গ্রাহক যিনি বাকি সবার চেয়ে ৫০ গুণ বেশি আয় করেন।" } },
+  { term: "Correlation", track: "data", meaning: { en: "How strongly two things move together, from −1 (opposite) to +1 (together). It is not proof that one causes the other.", bn: "দুটো জিনিস কতটা একসাথে বদলায়, −১ (উল্টো) থেকে +১ (একসাথে)। একটা অন্যটার কারণ — এটা প্রমাণ করে না।" } },
+  { term: "Histogram", track: "data", meaning: { en: "A bar chart that shows how many values fall in each range — the “shape” of your data.", bn: "একটা বার চার্ট যা দেখায় প্রতিটা সীমার মধ্যে কতগুলো মান পড়েছে — ডেটার “আকৃতি”।" } },
+  { term: "NULL", track: "sql", meaning: { en: "An empty cell: the value is missing or unknown. It is not zero.", bn: "একটা খালি ঘর: মানটা নেই বা অজানা। এটা শূন্য নয়।" } },
+  { term: "Query", track: "sql", meaning: { en: "A question you ask a database, written in SQL.", bn: "SQL-এ লেখা একটা প্রশ্ন, যা ডেটাবেসকে করা হয়।" } },
+  { term: "Primary key", track: "sql", meaning: { en: "A column that is unique for every row, like a National ID number.", bn: "এমন একটা কলাম যা প্রতিটা সারির জন্য আলাদা, যেমন জাতীয় পরিচয়পত্র নম্বর।" } },
+  { term: "JOIN", track: "sql", meaning: { en: "Connects two tables using a shared column, like matching orders to customers by customer ID.", bn: "একই কলাম দিয়ে দুটো টেবিল জোড়া লাগায়, যেমন গ্রাহক আইডি মিলিয়ে অর্ডারকে গ্রাহকের সাথে মেলানো।" } },
+  { term: "Window function", track: "sql", meaning: { en: "Calculates across related rows (rank, running total, moving average) without squashing them into one row.", bn: "সম্পর্কিত সারিগুলো নিয়ে হিসাব করে (র‍্যাঙ্ক, চলমান যোগফল, মুভিং অ্যাভারেজ), কিন্তু সারিগুলোকে একটায় মিশিয়ে ফেলে না।" } },
+  { term: "ETL / ELT", track: "engineering", meaning: { en: "Extract (get data), Transform (clean it), Load (save it). ELT loads first and cleans later inside the warehouse.", bn: "Extract (ডেটা আনা), Transform (পরিষ্কার করা), Load (সংরক্ষণ)। ELT আগে লোড করে, পরে ওয়্যারহাউসের ভেতরে পরিষ্কার করে।" } },
+  { term: "Pipeline", track: "engineering", meaning: { en: "A chain of automatic steps that moves data from where it is created to where it is used.", bn: "স্বয়ংক্রিয় ধাপের একটা শিকল, যা ডেটাকে তৈরির জায়গা থেকে ব্যবহারের জায়গায় নিয়ে যায়।" } },
+  { term: "Data warehouse", track: "engineering", meaning: { en: "A big, organised database made for analysis (BigQuery, Snowflake, Redshift).", bn: "বিশ্লেষণের জন্য বানানো একটা বড়, গোছানো ডেটাবেস (BigQuery, Snowflake, Redshift)।" } },
+  { term: "Data quality check", track: "engineering", meaning: { en: "An automatic test on data: no duplicates, no missing IDs, amounts are positive, dates are valid.", bn: "ডেটার ওপর স্বয়ংক্রিয় পরীক্ষা: ডুপ্লিকেট নেই, আইডি বাদ নেই, পরিমাণ ধনাত্মক, তারিখ সঠিক।" } },
+  { term: "Idempotent", track: "engineering", meaning: { en: "Running something twice gives the same result as running it once. Very important for retries.", bn: "কোনো কিছু দুবার চালালেও একবার চালানোর মতো একই ফল। আবার চালানোর (retry) সময় খুব জরুরি।" } },
+  { term: "Star schema", track: "engineering", meaning: { en: "A way to organise a warehouse: one central fact table of numbers, connected to small dimension tables of descriptions.", bn: "ওয়্যারহাউস সাজানোর একটা উপায়: মাঝখানে সংখ্যার একটা ফ্যাক্ট টেবিল, তার সাথে বর্ণনার কয়েকটা ছোট ডাইমেনশন টেবিল যুক্ত।" } },
+  { term: "Fact / Dimension", track: "engineering", meaning: { en: "Fact = what happened, as numbers (an order of 2 items for 900 ৳). Dimension = the details around it (which customer, product, day).", bn: "ফ্যাক্ট = কী ঘটেছে, সংখ্যায় (৯০০ ৳-এর ২টা পণ্যের অর্ডার)। ডাইমেনশন = তার চারপাশের বিবরণ (কোন গ্রাহক, পণ্য, দিন)।" } },
+  { term: "Batch vs streaming", track: "engineering", meaning: { en: "Batch processes data in bundles on a schedule (every night). Streaming processes each event the moment it happens.", bn: "ব্যাচ নির্দিষ্ট সময়ে (যেমন প্রতি রাতে) একসাথে ডেটা প্রসেস করে। স্ট্রিমিং প্রতিটা ঘটনা ঘটামাত্রই প্রসেস করে।" } },
+  { term: "DAG", track: "engineering", meaning: { en: "Directed Acyclic Graph: a one-way flow chart of tasks with no loops. Orchestrators like Airflow run pipelines as DAGs.", bn: "Directed Acyclic Graph: লুপ ছাড়া কাজের একমুখী ফ্লো-চার্ট। Airflow-এর মতো অর্কেস্ট্রেটর পাইপলাইনকে DAG হিসেবে চালায়।" } },
+  { term: "Feature", track: "ml", meaning: { en: "An input the model looks at, like credit score or income.", bn: "মডেল যে তথ্য দেখে সিদ্ধান্ত নেয়, যেমন ক্রেডিট স্কোর বা আয়।" } },
+  { term: "Label / Target", track: "ml", meaning: { en: "The answer the model tries to predict, like “defaulted: yes/no”.", bn: "যে উত্তরটা মডেল অনুমান করতে চায়, যেমন “খেলাপি: হ্যাঁ/না”।" } },
+  { term: "Training / Test set", track: "ml", meaning: { en: "Train on one part of the data, then test on a part the model has never seen — like practice questions vs the real exam.", bn: "ডেটার এক অংশে শেখানো, তারপর এমন অংশে পরীক্ষা যা মডেল কখনো দেখেনি — যেন অনুশীলনের প্রশ্ন বনাম আসল পরীক্ষা।" } },
+  { term: "Overfitting", track: "ml", meaning: { en: "The model memorised the training data instead of learning the pattern, so it fails on new data.", bn: "মডেল প্যাটার্ন না শিখে ট্রেনিং ডেটা মুখস্থ করেছে, তাই নতুন ডেটায় ব্যর্থ হয়।" } },
+  { term: "Gradient descent", track: "ml", meaning: { en: "How models learn: make a guess, measure the error, nudge the numbers a little to reduce the error, repeat.", bn: "মডেল যেভাবে শেখে: একটা আন্দাজ, ভুল মাপা, ভুল কমাতে সংখ্যাগুলো একটু একটু বদলানো, আবার একই কাজ।" } },
+  { term: "Accuracy / Precision / Recall", track: "ml", meaning: { en: "Accuracy: % of all answers that were right. Precision: of the ones flagged, % truly bad. Recall: of the truly bad ones, % we caught.", bn: "Accuracy: সব উত্তরের কত % ঠিক। Precision: যাদের ধরা হলো তাদের কত % সত্যিই খারাপ। Recall: সত্যিকারের খারাপদের কত % ধরা পড়ল।" } },
+  { term: "RFM", track: "ml", meaning: { en: "Recency (how recently), Frequency (how often), Monetary (how much) — three scores to group customers.", bn: "Recency (কত সম্প্রতি), Frequency (কত ঘন ঘন), Monetary (কত টাকা) — গ্রাহক ভাগ করার তিনটা স্কোর।" } },
+  { term: "Clustering", track: "ml", meaning: { en: "Finding natural groups in data without being told the answers.", bn: "উত্তর না বলে দিয়েই ডেটার মধ্যে স্বাভাবিক দল খুঁজে বের করা।" } },
+  { term: "Neural network", track: "ml", meaning: { en: "Many simple math units (neurons) in layers. Together they can learn very complex patterns.", bn: "স্তরে স্তরে সাজানো অনেকগুলো সরল গাণিতিক একক (নিউরন)। একসাথে এরা খুব জটিল প্যাটার্ন শিখতে পারে।" } },
+  { term: "LLM", track: "llm", meaning: { en: "Large Language Model — a huge neural network trained on text to predict the next token (ChatGPT, Claude, Gemini).", bn: "লার্জ ল্যাঙ্গুয়েজ মডেল — টেক্সট পড়ে পরের টোকেন অনুমান করতে শেখা বিশাল একটা নিউরাল নেটওয়ার্ক (ChatGPT, Claude, Gemini)।" } },
+  { term: "Token", track: "llm", meaning: { en: "A small piece of text (a word or part of a word) that the model reads and writes.", bn: "লেখার একটা ছোট টুকরো (একটা শব্দ বা শব্দের অংশ), যা মডেল পড়ে ও লেখে।" } },
+  { term: "Embedding", track: "llm", meaning: { en: "A list of numbers that captures a word's meaning. Similar meanings get similar numbers.", bn: "সংখ্যার একটা তালিকা যা শব্দের অর্থ ধরে রাখে। কাছাকাছি অর্থের শব্দের সংখ্যাও কাছাকাছি।" } },
+  { term: "Prompt", track: "llm", meaning: { en: "The instructions and context you give an LLM.", bn: "এলএলএমকে যে নির্দেশনা আর প্রসঙ্গ দেওয়া হয়।" } },
+  { term: "Temperature", track: "llm", meaning: { en: "A setting for randomness. Low = safe and repeatable. High = creative and surprising.", bn: "এলোমেলোভাবের একটা সেটিং। কম = নিরাপদ ও একই রকম। বেশি = সৃজনশীল ও অপ্রত্যাশিত।" } },
+  { term: "Hallucination", track: "llm", meaning: { en: "When an LLM confidently says something false.", bn: "যখন এলএলএম আত্মবিশ্বাসের সাথে ভুল কিছু বলে।" } },
+  { term: "RAG", track: "llm", meaning: { en: "Retrieval-Augmented Generation: find relevant documents first, then let the LLM answer from them.", bn: "Retrieval-Augmented Generation: আগে প্রাসঙ্গিক ডকুমেন্ট খোঁজা, তারপর সেখান থেকে এলএলএমকে উত্তর দিতে দেওয়া।" } },
+  { term: "AI agent", track: "llm", meaning: { en: "An LLM that can plan and use tools (run SQL, search, call APIs) in a loop until the task is done.", bn: "এমন একটা এলএলএম যা পরিকল্পনা করতে আর টুল ব্যবহার করতে পারে (SQL চালানো, সার্চ, API কল), কাজ শেষ না হওয়া পর্যন্ত বারবার।" } },
+  { term: "Fine-tuning", track: "llm", meaning: { en: "Training an existing model a bit more on your own examples so it learns your style or task.", bn: "আগে থেকে থাকা একটা মডেলকে নিজের উদাহরণ দিয়ে আরেকটু শেখানো, যাতে সে আপনার ধরন বা কাজ শেখে।" } },
+];

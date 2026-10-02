@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Lab · ডেটা ল্যাব</title>
+    <meta name="description" content="Learn data analysis, SQL, data engineering, machine learning and AI by playing with real-looking data — free, in English and বাংলা, right in your browser." />
+    <meta name="theme-color" content="#f5f8fb" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#070c17" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="author" content="Atiqul Islam Chowdhury" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Data Lab · ডেটা ল্যাব — learn data & AI by playing with it" />
+    <meta property="og:description" content="Interactive, bilingual labs for data analysis, SQL, data engineering, machine learning and LLMs. Nothing to install." />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230e7490'/><rect x='7' y='17' width='4' height='8' rx='1.5' fill='white' opacity='.7'/><rect x='14' y='11' width='4' height='14' rx='1.5' fill='white' opacity='.85'/><rect x='21' y='6' width='4' height='19' rx='1.5' fill='white'/></svg>" />
+
+    <!-- Apply the saved theme + language before the first paint: no flash of the wrong theme. -->
+    <script>
+      (function () {
+        try {
+          var th = localStorage.getItem("theme");
+          if (th === "light" || th === "dark") document.documentElement.dataset.theme = th;
+          var lg = localStorage.getItem("lang");
+          if (lg === "bn" || lg === "en") document.documentElement.lang = lg;
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Fonts load without blocking the first paint (system fonts show until they arrive). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" />
+    </noscript>
+
+    <!-- Tiny critical styles for the instant loading shell (replaced as soon as the app starts). -->
+    <style>
+      html { background: #f5f8fb; color: #0f1b2d; }
+      html[data-theme="dark"] { background: #070c17; color: #e3ebf7; }
+      @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) { background: #070c17; color: #e3ebf7; } }
+      body { margin: 0; font-family: Inter, "Hind Siliguri", system-ui, sans-serif; }
+      .boot { min-height: 100vh; }
+      .boot-bar { height: 56px; border-bottom: 1px solid rgb(127 140 160 / 0.25); display: flex; align-items: center; gap: 10px; padding: 0 20px; font-weight: 700; }
+      .boot-bar i { width: 26px; height: 26px; border-radius: 7px; background: #0e7490; display: inline-block; }
+      .boot-hero { max-width: 1080px; margin: 0 auto; padding: 56px 20px; }
+      .boot-line { height: 18px; border-radius: 9px; margin: 14px 0; background: linear-gradient(90deg, rgb(127 140 160 / 0.12), rgb(127 140 160 / 0.24), rgb(127 140 160 / 0.12)); background-size: 200% 100%; animation: boot 1.2s linear infinite; }
+      @keyframes boot { to { background-position: -200% 0; } }
+      @media (prefers-reduced-motion: reduce) { .boot-line { animation: none; } }
+    </style>
+  </head>
+  <body>
+    <noscript>Data Lab needs JavaScript to run its interactive labs. · ইন্টারেক্টিভ ল্যাব চালাতে জাভাস্ক্রিপ্ট চালু করুন।</noscript>
+    <div id="root">
+      <div class="boot" aria-busy="true" aria-label="Loading Data Lab">
+        <div class="boot-bar"><i></i> Data Lab</div>
+        <div class="boot-hero">
+          <div class="boot-line" style="width: 46%; height: 34px"></div>
+          <div class="boot-line" style="width: 32%; height: 34px"></div>
+          <div class="boot-line" style="width: 62%"></div>
+          <div class="boot-line" style="width: 55%"></div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
