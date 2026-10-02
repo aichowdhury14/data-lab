@@ -9,6 +9,8 @@ export interface Lesson {
   analogy: T;
   sql: string;
   task: T;
+  /** Expected answer(s) for the task; any one matching counts as correct. */
+  solutions?: string[];
 }
 
 export const LESSONS: Lesson[] = [
@@ -29,6 +31,7 @@ export const LESSONS: Lesson[] = [
       en: "Add age and credit_score to the list. Then try SELECT * — the star means “every column”.",
       bn: "তালিকায় age আর credit_score যোগ করুন। তারপর SELECT * লিখে দেখুন — তারকা (*) মানে “সব কলাম”।",
     },
+    solutions: ["SELECT age, credit_score FROM customers LIMIT 10;"],
   },
   {
     id: "where",
@@ -47,6 +50,7 @@ export const LESSONS: Lesson[] = [
       en: "Find customers from Sylhet or Khulna who are 30 to 40 years old. Hint: city IN ('Sylhet','Khulna') AND age BETWEEN 30 AND 40.",
       bn: "সিলেট বা খুলনার ৩০ থেকে ৪০ বছর বয়সী গ্রাহক খুঁজুন। ইঙ্গিত: city IN ('Sylhet','Khulna') AND age BETWEEN 30 AND 40।",
     },
+    solutions: ["SELECT name FROM customers WHERE city IN ('Sylhet','Khulna') AND age BETWEEN 30 AND 40;"],
   },
   {
     id: "order",
@@ -65,6 +69,7 @@ export const LESSONS: Lesson[] = [
       en: "Who are the 5 youngest customers? If two have the same age, show the higher credit score first (ORDER BY age, credit_score DESC).",
       bn: "সবচেয়ে কম বয়সী ৫ জন কে? দুজনের বয়স এক হলে যার ক্রেডিট স্কোর বেশি সে আগে (ORDER BY age, credit_score DESC)।",
     },
+    solutions: ["SELECT name FROM customers ORDER BY age, credit_score DESC LIMIT 5;"],
   },
   {
     id: "aggregate",
@@ -83,6 +88,7 @@ export const LESSONS: Lesson[] = [
       en: "What is the total amount of all transactions? How many different payment channels are there? (COUNT(DISTINCT channel))",
       bn: "সব লেনদেনের মোট পরিমাণ কত? কয়টা আলাদা পেমেন্ট মাধ্যম আছে? (COUNT(DISTINCT channel))",
     },
+    solutions: ["SELECT SUM(amount), COUNT(DISTINCT channel) FROM transactions;"],
   },
   {
     id: "groupby",
@@ -101,6 +107,7 @@ export const LESSONS: Lesson[] = [
       en: "Group transactions by channel and show the total amount for each. Which channel moves the most money?",
       bn: "লেনদেনগুলো channel অনুযায়ী ভাগ করে প্রতিটার মোট টাকা দেখান। কোন মাধ্যমে সবচেয়ে বেশি টাকা যায়?",
     },
+    solutions: ["SELECT channel, SUM(amount) FROM transactions GROUP BY channel;"],
   },
   {
     id: "having",
@@ -119,6 +126,7 @@ export const LESSONS: Lesson[] = [
       en: "Change the channel to 'Card' and the HAVING number to 80. What changed?",
       bn: "channel বদলে 'Card' করুন আর HAVING-এর সংখ্যা ৮০ করুন। কী বদলাল?",
     },
+    solutions: ["SELECT category, COUNT(*) FROM transactions WHERE channel = 'Card' GROUP BY category HAVING COUNT(*) > 80;"],
   },
   {
     id: "case",
@@ -137,6 +145,7 @@ export const LESSONS: Lesson[] = [
       en: "Make age groups: under 30, 30–44, and 45+. How many customers are in each?",
       bn: "বয়সের দল বানান: ৩০-এর কম, ৩০–৪৪, আর ৪৫+। প্রতিটায় কতজন গ্রাহক?",
     },
+    solutions: ["SELECT COUNT(*) FROM customers GROUP BY CASE WHEN age < 30 THEN 1 WHEN age < 45 THEN 2 ELSE 3 END;"],
   },
   {
     id: "join",
@@ -155,6 +164,7 @@ export const LESSONS: Lesson[] = [
       en: "Find total spending per city: JOIN the tables, then GROUP BY c.city with SUM(t.amount).",
       bn: "শহরভিত্তিক মোট খরচ বের করুন: টেবিল JOIN করুন, তারপর c.city দিয়ে GROUP BY আর SUM(t.amount)।",
     },
+    solutions: ["SELECT c.city, SUM(t.amount) FROM transactions t JOIN customers c ON c.id = t.customer_id GROUP BY c.city;"],
   },
   {
     id: "leftjoin",
@@ -173,6 +183,7 @@ export const LESSONS: Lesson[] = [
       en: "These are good customers with no loan yet — a perfect list for the marketing team! Now change HAVING to find people with 3 or more loans.",
       bn: "এরা ভালো গ্রাহক কিন্তু এখনো ঋণ নেননি — মার্কেটিং টিমের জন্য দারুণ তালিকা! এবার HAVING বদলে ৩ বা তার বেশি ঋণ আছে এমন মানুষ খুঁজুন।",
     },
+    solutions: ["SELECT c.id FROM customers c LEFT JOIN loans l ON l.customer_id = c.id GROUP BY c.id HAVING COUNT(l.id) >= 3;"],
   },
   {
     id: "subquery",
@@ -191,6 +202,7 @@ export const LESSONS: Lesson[] = [
       en: "Find the loans that are bigger than the average loan. How many are there?",
       bn: "গড় ঋণের চেয়ে বড় ঋণগুলো খুঁজুন। কয়টা আছে?",
     },
+    solutions: ["SELECT COUNT(*) FROM loans WHERE amount > (SELECT AVG(amount) FROM loans);","SELECT id FROM loans WHERE amount > (SELECT AVG(amount) FROM loans);"],
   },
   {
     id: "cte",
@@ -209,6 +221,7 @@ export const LESSONS: Lesson[] = [
       en: "Add a second step that counts transactions per month, then JOIN the two steps together.",
       bn: "আরেকটা ধাপ যোগ করুন যেটা প্রতি মাসের লেনদেন গোনে, তারপর দুটো ধাপ JOIN করুন।",
     },
+    solutions: ["SELECT strftime('%Y-%m', txn_date) AS month, COUNT(*) FROM transactions GROUP BY month ORDER BY month;"],
   },
   {
     id: "window-rank",
@@ -227,6 +240,7 @@ export const LESSONS: Lesson[] = [
       en: "Rank by credit_score instead. Then try ROW_NUMBER() and DENSE_RANK() — what do they do when two people tie?",
       bn: "এবার credit_score দিয়ে র‍্যাঙ্ক করুন। তারপর ROW_NUMBER() আর DENSE_RANK() চেষ্টা করুন — দুজন সমান হলে এরা কী করে?",
     },
+    solutions: ["SELECT name FROM (SELECT name, RANK() OVER (PARTITION BY city ORDER BY credit_score DESC) AS r FROM customers) WHERE r <= 3;"],
   },
   {
     id: "window-ma",
@@ -245,6 +259,7 @@ export const LESSONS: Lesson[] = [
       en: "Switch to ticker 'BRACBANK' and use a 10-day window. Bonus: add a running total of volume.",
       bn: "ticker বদলে 'BRACBANK' করুন আর ১০ দিনের উইন্ডো নিন। বোনাস: volume-এর চলমান যোগফল যোগ করুন।",
     },
+    solutions: ["SELECT trade_date, ROUND(AVG(close) OVER (ORDER BY trade_date ROWS BETWEEN 9 PRECEDING AND CURRENT ROW), 2) FROM stock_prices WHERE ticker = 'BRACBANK' ORDER BY trade_date LIMIT 20;"],
   },
   {
     id: "capstone",
@@ -279,9 +294,10 @@ export const LESSONS: Lesson[] = [
     },
     sql: "SELECT strftime('%Y-%m', order_date) AS month,\n       COUNT(*) AS orders,\n       SUM(quantity * unit_price) AS revenue\nFROM shop_orders\nGROUP BY month\nORDER BY month;",
     task: {
-      en: "Switch to the 📈 Chart view. Then find which category sells most in the Eid months (add WHERE category = 'Fashion').",
-      bn: "📈 চার্ট ভিউতে যান। তারপর ঈদের মাসে কোন ক্যাটাগরি সবচেয়ে বেশি বিক্রি হয় খুঁজুন (WHERE category = 'Fashion' যোগ করুন)।",
+      en: "Switch to the 📈 Chart view. Then show only Fashion sales per month (add WHERE category = 'Fashion') — watch the Eid peaks get even sharper.",
+      bn: "📈 চার্ট ভিউতে যান। তারপর শুধু ফ্যাশনের মাসভিত্তিক বিক্রি দেখান (WHERE category = 'Fashion' যোগ করুন) — দেখুন ঈদের চূড়াগুলো আরও তীক্ষ্ণ হয়।",
     },
+    solutions: ["SELECT strftime('%Y-%m', order_date) AS month, SUM(quantity * unit_price) FROM shop_orders WHERE category = 'Fashion' GROUP BY month ORDER BY month;"],
   },
   {
     id: "attrition",
@@ -300,6 +316,7 @@ export const LESSONS: Lesson[] = [
       en: "Now group by department instead. Which department loses the most people? Does remote work help?",
       bn: "এবার department দিয়ে দল বানান। কোন বিভাগ থেকে সবচেয়ে বেশি মানুষ চলে যায়? রিমোট কাজ কি সাহায্য করে?",
     },
+    solutions: ["SELECT department FROM employees GROUP BY department ORDER BY AVG(left_company) DESC;"],
   },
   {
     id: "air",
@@ -336,5 +353,6 @@ export const LESSONS: Lesson[] = [
       en: "Do the same with attendance_pct (e.g. under 60%, 60–80%, 80%+). Which matters more?",
       bn: "attendance_pct দিয়েও একই কাজ করুন (যেমন ৬০%-এর কম, ৬০–৮০%, ৮০%+)। কোনটা বেশি গুরুত্বপূর্ণ?",
     },
+    solutions: ["SELECT COUNT(*) FROM students GROUP BY CASE WHEN attendance_pct < 60 THEN 1 WHEN attendance_pct < 80 THEN 2 ELSE 3 END;"],
   },
 ];

@@ -157,6 +157,26 @@ const back = parseCsv(toCsv(DATASETS[0].rows.slice(0, 5)));
 ok(JSON.stringify(back) === JSON.stringify(DATASETS[0].rows.slice(0, 5)), "csv: download -> upload round-trip is lossless");
 ok(parseCsv('a,b\n"x, y",2\n"say ""hi""",3')[1].a === 'say "hi"', "csv: quoted commas and quotes are parsed");
 
+// --- SQL answer checker
+const { compare, sortsResult } = await import("../src/data/check");
+const res = (q: string) => {
+  const r = db.exec(q)[0];
+  return { columns: r?.columns ?? [], rows: (r?.values ?? []) as unknown[][] };
+};
+for (const l of LESSONS.filter((x) => x.solutions)) {
+  const sol = l.solutions![0];
+  ok(res(sol).rows.length > 0 && compare(res(sol), res(sol), sortsResult(sol)).ok, `checker: "${l.id}" solution returns rows and grades itself correct`);
+  const starter = compare(res(l.sql), res(sol), sortsResult(sol));
+  ok(!starter.ok, `checker: "${l.id}" unchanged starter query is NOT accepted`);
+}
+const extraCol = compare(res("SELECT name, city, age FROM customers WHERE age BETWEEN 30 AND 40 AND city IN ('Sylhet','Khulna')"), res(LESSONS.find((l) => l.id === "where")!.solutions![0]), false);
+ok(extraCol.ok, "checker: extra columns and different column order are accepted");
+const wrongOrder = compare(res("SELECT name FROM customers ORDER BY age DESC, credit_score DESC LIMIT 5"), res("SELECT name FROM customers ORDER BY age, credit_score DESC LIMIT 5"), true);
+ok(!wrongOrder.ok, `checker: wrong sort is rejected (${!wrongOrder.ok ? wrongOrder.reason : ""})`);
+const rounded = compare(res("SELECT department, ROUND(100.0*AVG(left_company),1) AS pct FROM employees GROUP BY department ORDER BY pct DESC"), res(LESSONS.find((l) => l.id === "attrition")!.solutions![0]), true);
+ok(rounded.ok, "checker: attrition answer with an extra rounded column is accepted");
+ok(sortsResult("SELECT * FROM (SELECT RANK() OVER (ORDER BY x) r FROM t)") === false && sortsResult("SELECT a FROM t ORDER BY a") === true, "checker: ORDER BY inside OVER() is not treated as sorting the result");
+
 db.close();
 console.log(failed ? `\n${failed} FAILED` : "\nall checks passed");
 process.exit(failed ? 1 : 0);

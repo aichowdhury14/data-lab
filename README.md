@@ -11,7 +11,7 @@ Everything runs in the browser on 8 simulated, Bangladesh-flavoured datasets. Th
 | Section | What the learner does |
 |---|---|
 | **📊 Data Analysis** | Profile a dataset, histograms, group comparisons with bar + box plots, correlation heatmap, trends and donut charts. Download any dataset as CSV, or **upload your own CSV**. |
-| **🗄️ SQL** | 18 lessons on a real SQLite engine (WebAssembly): 7 beginner, 7 intermediate, 4 practice on the newer datasets. Results switch between table and chart. Free playground. |
+| **🗄️ SQL** | 18 lessons on a real SQLite engine (WebAssembly): 7 beginner, 7 intermediate, 4 practice on the newer datasets. **✓ Check my answer** on 16 lessons (forgiving grading, hints, show-solution, solved tracker), **🔗 shareable query links** that open the same lesson, results as table or chart, free playground. |
 | **🏗️ Data Engineering** | 4 labs: **ETL pipeline** (clean a messy file step by step with quality checks), **star schema** (fact + dimension tables, storage saved, a real business query), **streaming** (live payments, 3-second windows, instant fraud alerts vs a nightly batch), **orchestration** (Airflow-style DAG with parallel tasks, retries, failures, Gantt chart and logs). |
 | **🤖 Machine Learning** | 8 models written from scratch: linear regression (4 datasets, animated gradient descent), logistic regression (ROC, confusion matrix, threshold), decision tree, k-NN, k-means, **RFM customer segmentation**, a neural-network playground and time-series forecasting. |
 | **✨ AI & LLM** | How an LLM works, tokenizer (English vs Bangla cost), embeddings map + word arithmetic, attention, next-word sampling (temperature / top-k / top-p), RAG, an **AI agent** that answers questions by writing and running SQL, and prompting tips. |
@@ -54,7 +54,7 @@ select path, lang, count(*) from datalab.visits group by 1, 2 order by 3 desc;  
 npm install
 npm run dev        # http://localhost:5173
 npm run build      # type-check + production build into dist/
-npm test           # 68 checks: every SQL lesson, pipeline, datasets, every ML model, RFM, LLM engine, agent, CSV
+npm test           # 104 checks: every SQL lesson, pipeline, datasets, every ML model, RFM, LLM engine, agent, CSV
 ```
 
 ## Deploy on Vercel

@@ -6,7 +6,31 @@ import { resetDb, runQuery, type QueryResult } from "../data/db";
 import { Callout, DataTable, PageHead, Plain, Tabs } from "../components/ui";
 import { Quiz } from "../components/Quiz";
 import { Bars, XY } from "../components/charts";
-import { useMark, useProgress } from "../progress";
+import { useSearchParams } from "react-router-dom";
+import { compare, sortsResult, type Grade } from "../data/check";
+
+// Lessons the learner has actually solved (separate from merely opened).
+const SOLVED_KEY = "datalab-sql-solved";
+function readSolved(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(SOLVED_KEY) ?? "[]");
+  } catch {
+    return [];
+  }
+}
+const CHECKABLE = LESSONS.filter((l) => l.solutions).length;
+
+// Shareable links: the query travels in the URL as URL-safe base64 of its UTF-8 bytes.
+const encodeQuery = (q: string) => btoa(String.fromCharCode(...new TextEncoder().encode(q))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+function decodeQuery(s: string): string | null {
+  try {
+    const b = atob(s.replace(/-/g, "+").replace(/_/g, "/"));
+    return new TextDecoder().decode(Uint8Array.from(b, (c) => c.charCodeAt(0)));
+  } catch {
+    return null;
+  }
+}
+import { markDone, useMark, useProgress } from "../progress";
 
 const PLAYGROUND = -1;
 const LEVEL: Record<Lesson["level"], T> = {
@@ -24,7 +48,13 @@ export default function Sql() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [view, setView] = useState<"table" | "chart">("table");
+  const [grade, setGrade] = useState<Grade | "error" | "checking" | null>(null);
+  const [showSol, setShowSol] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [params] = useSearchParams();
   const done = useProgress().sql ?? [];
+  const [solved, setSolved] = useState<string[]>(readSolved);
+  const [party, setParty] = useState(0);
   useMark("sql", lesson?.id ?? null);
 
   const run = useCallback(async (q: string) => {
@@ -40,15 +70,88 @@ export default function Sql() {
     }
   }, []);
 
+  // Opened from a shared link? Load that query into the playground and run it.
   useEffect(() => {
-    run(LESSONS[0].sql);
-  }, [run]);
+    const shared = params.get("q");
+    const q = shared ? decodeQuery(shared) : null;
+    const li = LESSONS.findIndex((l) => l.id === params.get("lesson"));
+    if (li >= 0) setIdx(li);
+    if (q) {
+      if (li < 0) setIdx(PLAYGROUND);
+      setSql(q);
+      run(q);
+    } else if (li >= 0) {
+      setSql(LESSONS[li].sql);
+      run(LESSONS[li].sql);
+    } else run(LESSONS[0].sql);
+  }, [run]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const open = (i: number) => {
+    setGrade(null);
+    setShowSol(false);
     setIdx(i);
     const q = i === PLAYGROUND ? "SELECT * FROM customers LIMIT 5;" : LESSONS[i].sql;
     setSql(q);
     run(q);
+  };
+
+  /** Runs the learner's query and each accepted solution, then compares the results. */
+  const check = async () => {
+    if (!lesson?.solutions) return;
+    setGrade("checking");
+    let mine: QueryResult;
+    try {
+      mine = await runQuery(sql);
+      setResult(mine);
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setGrade("error");
+      return;
+    }
+    let best: Grade | null = null;
+    for (const sol of lesson.solutions) {
+      const g = compare(mine, await runQuery(sol), sortsResult(sol));
+      if (g.ok) {
+        best = g;
+        break;
+      }
+      best ??= g;
+    }
+    setGrade(best);
+    if (best?.ok) {
+      markDone("sql", lesson.id);
+      setParty(Date.now());
+      if (!solved.includes(lesson.id)) {
+        const next = [...solved, lesson.id];
+        setSolved(next);
+        try {
+          localStorage.setItem(SOLVED_KEY, JSON.stringify(next));
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  };
+
+  const share = async () => {
+    const url = `${location.origin}/sql?${lesson ? `lesson=${lesson.id}&` : ""}q=${encodeQuery(sql)}`;
+    const phone = typeof matchMedia !== "undefined" && matchMedia("(pointer: coarse)").matches;
+    if (phone && navigator.share) {
+      try {
+        await navigator.share({ title: "Data Lab · SQL", text: lesson ? `Try my answer to “${t(lesson.title)}”` : "Try this SQL query", url });
+        return;
+      } catch {
+        /* cancelled — fall back to copying */
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      window.prompt("Copy this link:", url);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2200);
   };
 
   return (
@@ -63,12 +166,20 @@ export default function Sql() {
       />
       <div className="sql-layout">
         <aside>
+          <div className="solved-meter" title={t({ en: "Lessons solved with “Check my answer”", bn: "“আমার উত্তর যাচাই করুন” দিয়ে সমাধান করা পাঠ" })}>
+            <span>
+              🏆 {t({ en: "Solved", bn: "সমাধান" })} <b>{solved.length}</b> / {CHECKABLE}
+            </span>
+            <div className="progress">
+              <div style={{ width: `${(solved.length / CHECKABLE) * 100}%` }} />
+            </div>
+          </div>
           <ul className="lesson-list">
             {LESSONS.map((l, i) => (
               <li key={l.id}>
                 {(i === 0 || LESSONS[i - 1].level !== l.level) && <div className="list-head">{t(LEVEL[l.level])}</div>}
                 <button className={idx === i ? "on" : ""} onClick={() => open(i)}>
-                  <span className="n">{done.includes(l.id) ? "✓" : i + 1}</span>
+                  <span className={`n${solved.includes(l.id) ? " solved" : done.includes(l.id) ? " seen" : ""}`}>{solved.includes(l.id) ? "✓" : i + 1}</span>
                   <span>{t(l.title)}</span>
                 </button>
               </li>
@@ -104,13 +215,58 @@ export default function Sql() {
             </p>
           )}
 
+          {lesson && (
+            <Callout kind="idea" title={{ en: "Your turn", bn: "এবার আপনার পালা" }}>
+              <p>{t(lesson.task)}</p>
+              {lesson.solutions && (
+                <div className="check-box">
+                  <div className="row">
+                    <button className="btn" onClick={check} disabled={grade === "checking"}>
+                      ✓ {t({ en: "Check my answer", bn: "আমার উত্তর যাচাই করুন" })}
+                    </button>
+                    {grade && grade !== "checking" && !(typeof grade === "object" && grade.ok) && (
+                      <button className="btn ghost" onClick={() => setShowSol(!showSol)}>
+                        💡 {showSol ? t({ en: "Hide solution", bn: "সমাধান লুকান" }) : t({ en: "Show solution", bn: "সমাধান দেখুন" })}
+                      </button>
+                    )}
+                  </div>
+                  {grade && grade !== "checking" && <Feedback grade={grade} />}
+                  {party > 0 && typeof grade === "object" && grade?.ok && (
+                    <div className="confetti" key={party} aria-hidden>
+                      {Array.from({ length: 18 }, (_, k) => (
+                        <i key={k} style={{ ["--x" as string]: `${(k * 37) % 100}%`, ["--d" as string]: `${(k % 6) * 0.05}s`, ["--c" as string]: `var(--c${(k % 7) + 1})` }} />
+                      ))}
+                    </div>
+                  )}
+                  {showSol && (
+                    <div className="solution">
+                      <pre>{lesson.solutions[0]}</pre>
+                      <button
+                        className="btn ghost"
+                        onClick={() => {
+                          setSql(lesson.solutions![0]);
+                          run(lesson.solutions![0]);
+                        }}
+                      >
+                        {t({ en: "Put it in the editor", bn: "এডিটরে বসান" })}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </Callout>
+          )}
           <textarea
             className="code"
             value={sql}
             spellCheck={false}
             onChange={(e) => setSql(e.target.value)}
             onKeyDown={(e) => {
-              if ((e.ctrlKey || e.metaKey) && e.key === "Enter") run(sql);
+              if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                e.preventDefault();
+                if (e.shiftKey && lesson?.solutions) check();
+                else run(sql);
+              }
             }}
             aria-label="SQL editor"
           />
@@ -133,8 +289,11 @@ export default function Sql() {
               >
                 {t({ en: "Reset database", bn: "ডেটাবেস রিসেট" })}
               </button>
+              <button className="btn ghost" onClick={share} title={t({ en: "Copy a link that opens this exact query", bn: "এই কোয়েরিসহ খুলবে এমন লিংক কপি করুন" })}>
+                {copied ? "✓ " + t({ en: "Link copied!", bn: "লিংক কপি হয়েছে!" }) : "🔗 " + t({ en: "Share query", bn: "কোয়েরি শেয়ার" })}
+              </button>
             </div>
-            <span className="muted small">Ctrl + Enter</span>
+            <span className="muted small">Ctrl + Enter {t({ en: "run", bn: "চালান" })}{lesson?.solutions ? ` · Ctrl + Shift + Enter ${t({ en: "check", bn: "যাচাই" })}` : ""}</span>
           </div>
 
           {error && <div className="err">{error}</div>}
@@ -163,11 +322,6 @@ export default function Sql() {
             </>
           )}
 
-          {lesson && (
-            <Callout kind="idea" title={{ en: "Your turn", bn: "এবার আপনার পালা" }}>
-              <p>{t(lesson.task)}</p>
-            </Callout>
-          )}
           <div className="row">
             {idx > 0 && (
               <button className="btn ghost" onClick={() => open(idx === PLAYGROUND ? 0 : idx - 1)}>
@@ -236,5 +390,32 @@ function ResultChart({ r }: { r: QueryResult }) {
         colors={r.rows.slice(0, 30).map((_, i) => `var(--c${(i % 8) + 1})`)}
       />
     </div>
+  );
+}
+
+function Feedback({ grade }: { grade: Grade | "error" }) {
+  const { t } = useLang();
+  if (grade === "error")
+    return <p className="check-msg no">{t({ en: "❌ Your query has an error (see the red box above). Fix it, then check again.", bn: "❌ আপনার কোয়েরিতে ভুল আছে (ওপরের লাল বক্স দেখুন)। ঠিক করে আবার যাচাই করুন।" })}</p>;
+  if (grade.ok)
+    return <p className="check-msg ok">{t({ en: "✅ Correct! Nicely done — this lesson is now marked as solved.", bn: "✅ একদম ঠিক! দারুণ — এই পাঠটি সমাধান হিসেবে চিহ্নিত হলো।" })}</p>;
+  if (grade.reason === "rows")
+    return (
+      <p className="check-msg no">
+        {t({
+          en: `🤔 Not yet. Your result has ${grade.got} rows, but the answer has ${grade.expected}. Check your WHERE, HAVING or LIMIT.`,
+          bn: `🤔 এখনো হয়নি। আপনার ফলাফলে ${grade.got}টি সারি, কিন্তু উত্তরে আছে ${grade.expected}টি। WHERE, HAVING বা LIMIT আবার দেখুন।`,
+        })}
+      </p>
+    );
+  if (grade.reason === "order")
+    return <p className="check-msg no">{t({ en: "🔀 Almost! The right rows, but in the wrong order. Check your ORDER BY (and ASC / DESC).", bn: "🔀 প্রায় হয়ে গেছে! সারিগুলো ঠিক, কিন্তু ক্রম ভুল। ORDER BY (আর ASC / DESC) দেখুন।" })}</p>;
+  return (
+    <p className="check-msg no">
+      {t({
+        en: `🧐 Close! The right number of rows (${grade.expected}), but some values are different. Check your calculation or GROUP BY.`,
+        bn: `🧐 কাছাকাছি! সারির সংখ্যা ঠিক (${grade.expected}), কিন্তু কিছু মান আলাদা। হিসাব বা GROUP BY আবার দেখুন।`,
+      })}
+    </p>
   );
 }
