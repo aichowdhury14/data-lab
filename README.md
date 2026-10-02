@@ -1,4 +1,4 @@
-﻿# Data Lab Â· à¦¡à§‡à¦Ÿà¦¾ à¦²à§à¦¯à¦¾à¦¬
+# Data Lab Â· à¦¡à§‡à¦Ÿà¦¾ à¦²à§à¦¯à¦¾à¦¬
 
 🌐 **Live site: https://data-lab-ai.vercel.app**
 
