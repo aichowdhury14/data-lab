@@ -37,6 +37,15 @@ function certId(name: string, track: string, date: string) {
 }
 
 // ---- drawing ------------------------------------------------------------------------------------
+let sigPromise: Promise<HTMLImageElement | null> | null = null;
+/** The creator's signature (public/signature.png, transparent ink); loaded once. */
+const signature = () =>
+  (sigPromise ??= new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null); // the certificate still renders without it
+    img.src = "/signature.png";
+  }));
 const W = 1600;
 const H = 1131;
 
@@ -56,9 +65,11 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, maxW: number): string
 }
 
 async function draw(canvas: HTMLCanvasElement, o: { name: string; track: CertId; date: Date; id: string }) {
-  await Promise.all(
-    ["700 64px 'Space Grotesk'", "600 40px 'Hind Siliguri'", "400 26px Inter", "500 22px 'JetBrains Mono'"].map((f) => document.fonts?.load(f).catch(() => undefined)),
-  );
+  // load everything first, then draw in one synchronous pass (overlapping redraws can never interleave)
+  const [sig] = await Promise.all([
+    signature(),
+    ...["700 64px 'Space Grotesk'", "600 40px 'Hind Siliguri'", "400 26px Inter", "500 22px 'JetBrains Mono'"].map((f) => document.fonts?.load(f).catch(() => undefined)),
+  ]);
   const ctx = canvas.getContext("2d")!;
   canvas.width = W;
   canvas.height = H;
@@ -178,6 +189,14 @@ async function draw(canvas: HTMLCanvasElement, o: { name: string; track: CertId;
   ctx.moveTo(W / 2 - 200, y + 20);
   ctx.lineTo(W / 2 + 200, y + 20);
   ctx.stroke();
+  // handwritten signature, resting on the line
+  if (sig) {
+    const h = 84;
+    const w = (sig.width / sig.height) * h;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(sig, W / 2 - w / 2, y + 22 - h, w, h);
+  }
   ctx.fillStyle = ink;
   ctx.font = `600 28px ${head}`;
   ctx.fillText(CREATOR.name, W / 2, y + 55);
