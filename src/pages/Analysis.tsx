@@ -64,6 +64,7 @@ export default function Analysis() {
           bn: "ডেটা অ্যানালাইসিস মানে মনোযোগ দিয়ে ডেটা দেখে একটা প্রশ্নের উত্তর খোঁজা। নিচে একটা ডেটাসেট বাছুন, তারপর পাঁচটা ট্যাব একে একে দেখুন — “এখানে কী আছে?” থেকে “সময়ের সাথে কী বদলাল?” পর্যন্ত।",
         }}
         art="analysis"
+        track="analysis"
       />
       <div className="row" style={{ marginBottom: 12 }}>
         <label>

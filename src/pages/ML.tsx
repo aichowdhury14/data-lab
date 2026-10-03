@@ -78,6 +78,7 @@ export default function ML() {
           bn: "মেশিন লার্নিং মানে প্রতিটা নিয়ম হাতে না লিখে উদাহরণ দেখিয়ে কম্পিউটারকে শেখানো। নিচে একটা মডেল বাছুন, বাটন চাপুন, আর তাকে শিখতে দেখুন — অঙ্কে পণ্ডিত হওয়ার দরকার নেই।",
         }}
         art="ml"
+        track="ml"
       />
       <Picker items={MODELS.map((m) => ({ ...m, done: done.includes(m.id) }))} value={tab} onChange={setTab} />
       <div className="model-body" key={tab}>

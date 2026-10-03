@@ -8,6 +8,8 @@ import { LiveStats } from "../components/LiveStats";
 import { digits, numeralMode } from "../numerals";
 import { Bars, Donut, Lines, Scatter, XY } from "../components/charts";
 import { TRACKS, resetProgress, useProgress, type Track } from "../progress";
+import { TRACK_INFO, useCertStatus, type CertId } from "../certs";
+import { CHALLENGES, POINTS } from "../data/challenges";
 
 const PATHS: { to: string; track: Track; emoji: string; title: T; body: T; color: string }[] = [
   {
@@ -175,6 +177,7 @@ const MiniChart = memo(function MiniChart({ id }: { id: string }) {
 export default function Home() {
   const { t } = useLang();
   const progress = useProgress();
+  const certs = useCertStatus();
   const totalDone = (Object.keys(TRACKS) as Track[]).reduce((a, k) => a + Math.min(progress[k]?.length ?? 0, TRACKS[k]), 0);
   const total = Object.values(TRACKS).reduce((a, b) => a + b, 0);
   const totalRows = DATASETS.reduce((a, d) => a + d.rows.length, 0);
@@ -207,6 +210,11 @@ export default function Home() {
         <HeroConsole />
       </section>
       <DataTicker />
+
+      <section className="home-actions">
+        <CertPanel />
+        <DailyChallenge />
+      </section>
 
       <section className="counters">
         {(
@@ -251,26 +259,14 @@ export default function Home() {
                 <div style={{ width: `${pct}%` }} />
               </div>
               <span className="muted small">
-                {done}/{TRACKS[p.track]} {t({ en: "explored", bn: "দেখা হয়েছে" })}
+                {certs[p.track].ok
+                  ? "🎓 " + t({ en: "Certificate unlocked", bn: "সনদ খুলে গেছে" })
+                  : digits(t({ en: `${done} of ${TRACKS[p.track]} explored · 🎓 at 100%`, bn: `${TRACKS[p.track]}টির মধ্যে ${done}টি দেখা · ১০০%-এ 🎓 সনদ` }))}
               </span>
             </Link>
           );
         })}
       </section>
-
-      <Link to="/certificate" className="card cert-banner">
-        <span className="cb-ico">🎓</span>
-        <span>
-          <b>{t({ en: "Earn a free certificate", bn: "ফ্রি সনদ অর্জন করুন" })}</b>
-          <small>
-            {t({
-              en: "Finish a track and download a certificate with your name — or add it straight to your LinkedIn profile.",
-              bn: "একটা ট্র্যাক শেষ করে নিজের নামে সনদ ডাউনলোড করুন — অথবা সরাসরি লিংকডইন প্রোফাইলে যোগ করুন।",
-            })}
-          </small>
-        </span>
-        <span className="cb-go">→</span>
-      </Link>
 
       <h2>{t({ en: "Never done this before? Follow this path", bn: "আগে কখনো করেননি? এই পথে চলুন" })}</h2>
       <div className="timeline">
@@ -322,5 +318,65 @@ export default function Home() {
       </div>
 
     </>
+  );
+}
+
+/** Certificate panel near the top of the home page: what you can earn and how far along you are. */
+function CertPanel() {
+  const { t } = useLang();
+  const s = useCertStatus();
+  const tracks = (Object.keys(TRACK_INFO) as CertId[]).filter((k) => k !== "graduate");
+  const unlocked = tracks.filter((k) => s[k].ok).length;
+  return (
+    <Link to="/certificate" className="card cert-panel" viewTransition>
+      <div className="cp-head">
+        <span className="cp-medal">🎓</span>
+        <div>
+          <b>{t({ en: "Earn free certificates", bn: "ফ্রি সনদ অর্জন করুন" })}</b>
+          <small>
+            {t({
+              en: "Finish a track → get a certificate with your name. Download it or add it to LinkedIn.",
+              bn: "একটা ট্র্যাক শেষ করুন → নিজের নামে সনদ নিন। ডাউনলোড করুন বা লিংকডইনে যোগ করুন।",
+            })}
+          </small>
+        </div>
+      </div>
+      <div className="cp-tracks">
+        {tracks.map((k) => (
+          <span key={k} className={`cp-track${s[k].ok ? " ok" : ""}`} title={t(TRACK_INFO[k].title)}>
+            <span className="cp-ico">{s[k].ok ? "✓" : TRACK_INFO[k].icon}</span>
+            <span className="cp-mini">
+              <i style={{ width: `${(s[k].done / s[k].total) * 100}%` }} />
+            </span>
+          </span>
+        ))}
+      </div>
+      <span className="cp-cta">
+        {digits(
+          unlocked
+            ? t({ en: `${unlocked} of 5 unlocked — get your certificate →`, bn: `৫টির মধ্যে ${unlocked}টি খোলা — সনদ নিন →` })
+            : t({ en: "See how to earn one →", bn: "কীভাবে পাবেন দেখুন →" }),
+        )}
+      </span>
+    </Link>
+  );
+}
+
+/** One SQL challenge per day (the same for everyone on a given date). */
+function DailyChallenge() {
+  const { t } = useLang();
+  const day = Math.floor(Date.now() / 86400000);
+  const c = CHALLENGES[day % CHALLENGES.length];
+  const level = { easy: { en: "Easy", bn: "সহজ" }, medium: { en: "Medium", bn: "মাঝারি" }, hard: { en: "Hard", bn: "কঠিন" } }[c.level];
+  return (
+    <Link to={`/sql?challenge=${c.id}`} className="card daily" viewTransition>
+      <span className="daily-tag">🎯 {t({ en: "Today's SQL challenge", bn: "আজকের SQL চ্যালেঞ্জ" })}</span>
+      <b className="daily-q">{t(c.q)}</b>
+      <span className="row" style={{ gap: 6 }}>
+        <span className={`badge ch-${c.level}`}>{t(level)}</span>
+        <span className="badge">+{digits(String(POINTS[c.level]))} {t({ en: "pts", bn: "পয়েন্ট" })}</span>
+        <span className="daily-go">{t({ en: "Solve it", bn: "সমাধান করুন" })} →</span>
+      </span>
+    </Link>
   );
 }

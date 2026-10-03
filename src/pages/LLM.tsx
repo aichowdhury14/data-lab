@@ -52,6 +52,7 @@ export default function LLM() {
           bn: "ChatGPT, Claude আর Gemini সবাই একটা সহজ কাজ খুব ভালোভাবে করে: পরের শব্দটা আন্দাজ করা। নিচের প্রতিটা ল্যাবে সেই যন্ত্রের একটা ছোট অংশ বানানো হয়েছে, যাতে আপনি নিজে নেড়েচেড়ে দেখতে পারেন এটা কীভাবে কাজ করে।",
         }}
         art="llm"
+        track="llm"
       />
       <Picker items={LABS.map((l) => ({ ...l, done: done.includes(l.id) }))} value={tab} onChange={setTab} />
       <div className="model-body" key={tab}>

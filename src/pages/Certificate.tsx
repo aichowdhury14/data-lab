@@ -1,33 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import QRCode from "qrcode";
-import { useLang, type T } from "../i18n";
+import { useLang } from "../i18n";
 import { PageHead } from "../components/ui";
 import { CREATOR } from "../components/Creator";
-import { TRACKS, useProgress, type Track } from "../progress";
+import { SQL_SOLVED_NEEDED, TRACK_INFO, useCertStatus, type CertId } from "../certs";
 import { digits } from "../numerals";
 
 const SITE = "https://data-lab-ai.vercel.app";
-const SQL_SOLVED_NEEDED = 10;
-
-type CertId = Track | "graduate";
-const TRACK_INFO: Record<CertId, { title: T; icon: string; to: string }> = {
-  analysis: { title: { en: "Data Analysis", bn: "ডেটা অ্যানালাইসিস" }, icon: "📊", to: "/analysis" },
-  sql: { title: { en: "SQL", bn: "এসকিউএল" }, icon: "🗄️", to: "/sql" },
-  engineering: { title: { en: "Data Engineering", bn: "ডেটা ইঞ্জিনিয়ারিং" }, icon: "🏗️", to: "/engineering" },
-  ml: { title: { en: "Machine Learning", bn: "মেশিন লার্নিং" }, icon: "🤖", to: "/ml" },
-  llm: { title: { en: "AI & Large Language Models", bn: "এআই ও লার্জ ল্যাঙ্গুয়েজ মডেল" }, icon: "✨", to: "/llm" },
-  graduate: { title: { en: "Data Lab Graduate (all five tracks)", bn: "ডেটা ল্যাব গ্র্যাজুয়েট (পাঁচটি ট্র্যাক)" }, icon: "🎓", to: "/" },
-};
-
-function sqlSolved(): number {
-  try {
-    return (JSON.parse(localStorage.getItem("datalab-sql-solved") ?? "[]") as string[]).length;
-  } catch {
-    return 0;
-  }
-}
-
 /** Short, stable certificate id from the name, track and date (FNV-1a). */
 function certId(name: string, track: string, date: string) {
   let h = 2166136261;
@@ -223,7 +203,6 @@ async function draw(canvas: HTMLCanvasElement, o: { name: string; track: CertId;
 // ---- page -----------------------------------------------------------------------------------------
 export default function Certificate() {
   const { t } = useLang();
-  const progress = useProgress();
   const [name, setName] = useState(() => {
     try {
       return localStorage.getItem("datalab-cert-name") ?? "";
@@ -231,23 +210,7 @@ export default function Certificate() {
       return "";
     }
   });
-  const solved = useMemo(sqlSolved, []);
-  const status = useMemo(() => {
-    const s = {} as Record<CertId, { done: number; total: number; ok: boolean; note?: T }>;
-    (Object.keys(TRACKS) as Track[]).forEach((k) => {
-      const done = Math.min(progress[k]?.length ?? 0, TRACKS[k]);
-      let ok = done >= TRACKS[k];
-      let note: T | undefined;
-      if (k === "sql") {
-        ok = ok && solved >= SQL_SOLVED_NEEDED;
-        note = { en: `and solve ${SQL_SOLVED_NEEDED} lessons with “Check my answer” (${solved}/${SQL_SOLVED_NEEDED})`, bn: `এবং “আমার উত্তর যাচাই করুন” দিয়ে ${SQL_SOLVED_NEEDED}টা পাঠ সমাধান (${solved}/${SQL_SOLVED_NEEDED})` };
-      }
-      s[k] = { done, total: TRACKS[k], ok, note };
-    });
-    const all = (Object.keys(TRACKS) as Track[]).every((k) => s[k].ok);
-    s.graduate = { done: (Object.keys(TRACKS) as Track[]).filter((k) => s[k].ok).length, total: 5, ok: all };
-    return s;
-  }, [progress, solved]);
+  const status = useCertStatus();
   const firstOk = (Object.keys(status) as CertId[]).find((k) => status[k].ok);
   const [track, setTrack] = useState<CertId | null>(null);
   const chosen = track && status[track]?.ok ? track : (firstOk ?? null);
@@ -300,6 +263,20 @@ export default function Certificate() {
           bn: "একটা ট্র্যাক শেষ করুন আর নিজের নামে সনদ নিন — ফ্রি, আপনার ব্রাউজারেই তৈরি। ডাউনলোড করুন, প্রিন্ট করুন, বা লিংকডইন প্রোফাইলে যোগ করুন।",
         }}
       />
+      <div className="cert-how">
+        <div>
+          <b>1</b>
+          <span>{t({ en: "Open every part of a track — each tab, model or lab you visit is ticked off automatically.", bn: "একটা ট্র্যাকের প্রতিটা অংশ খুলুন — যে ট্যাব, মডেল বা ল্যাব দেখবেন তা নিজে থেকেই টিক হয়ে যাবে।" })}</span>
+        </div>
+        <div>
+          <b>2</b>
+          <span>{t({ en: `For SQL, also solve ${SQL_SOLVED_NEEDED} lessons with “Check my answer”.`, bn: `SQL-এর জন্য “আমার উত্তর যাচাই করুন” দিয়ে ${SQL_SOLVED_NEEDED}টি পাঠও সমাধান করুন।` })}</span>
+        </div>
+        <div>
+          <b>3</b>
+          <span>{t({ en: "Type your name and download your certificate, or add it to LinkedIn. Finish all five tracks to become a Data Lab Graduate.", bn: "নিজের নাম লিখে সনদ ডাউনলোড করুন, বা লিংকডইনে যোগ করুন। পাঁচটি ট্র্যাকই শেষ করলে হবেন ডেটা ল্যাব গ্র্যাজুয়েট।" })}</span>
+        </div>
+      </div>
       <div className="cert-tracks">
         {(Object.keys(TRACK_INFO) as CertId[]).map((k) => {
           const s = status[k];
@@ -313,8 +290,10 @@ export default function Certificate() {
                     ? t({ en: "✓ Unlocked", bn: "✓ খোলা হয়েছে" })
                     : digits(
                         k === "graduate"
-                          ? t({ en: `${s.done}/5 tracks finished`, bn: `৫টার মধ্যে ${s.done}টা ট্র্যাক শেষ` })
-                          : t({ en: `Explore ${s.done}/${s.total}`, bn: `দেখা হয়েছে ${s.done}/${s.total}` }) + (s.note ? ` ${t(s.note)}` : ""),
+                          ? t({ en: `${s.done} of 5 tracks finished`, bn: `৫টির মধ্যে ${s.done}টি ট্র্যাক শেষ` })
+                          : k === "sql"
+                            ? t({ en: `${s.done} of ${s.total} parts explored · ${Math.min(s.solved ?? 0, SQL_SOLVED_NEEDED)} of ${SQL_SOLVED_NEEDED} lessons solved`, bn: `${s.total}টির মধ্যে ${s.done}টি অংশ দেখা · ${SQL_SOLVED_NEEDED}টির মধ্যে ${Math.min(s.solved ?? 0, SQL_SOLVED_NEEDED)}টি পাঠ সমাধান` })
+                            : t({ en: `${s.done} of ${s.total} parts explored`, bn: `${s.total}টির মধ্যে ${s.done}টি অংশ দেখা হয়েছে` }),
                       )}
                 </small>
                 {!s.ok && k !== "graduate" && (

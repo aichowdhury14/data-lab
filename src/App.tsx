@@ -5,6 +5,7 @@ import { DATASETS } from "./data/generate";
 import Home from "./pages/Home";
 import { CreatorCard } from "./components/Creator";
 import { LiveStats, startLiveStats } from "./components/LiveStats";
+import { CertToast } from "./components/CertProgress";
 import { setRevealOrigin, smoothly } from "./transition";
 
 // Heavy pages load on demand — and start loading as soon as you hover / focus / touch a menu item,
@@ -34,6 +35,7 @@ export const NAV: { to: string; icon: string; label: T }[] = [
   { to: "/ml", icon: "🤖", label: { en: "Machine Learning", bn: "মেশিন লার্নিং" } },
   { to: "/llm", icon: "✨", label: { en: "AI & LLM", bn: "এআই ও এলএলএম" } },
   { to: "/glossary", icon: "📖", label: { en: "Glossary", bn: "শব্দকোষ" } },
+  { to: "/certificate", icon: "🎓", label: { en: "Certificates", bn: "সনদ" } },
 ];
 
 type Theme = "light" | "dark";
@@ -127,7 +129,7 @@ function RouteEffects() {
   }, [pathname]);
   useEffect(() => {
     const item = NAV.find((n) => n.to === pathname);
-    document.title = item ? `${t(item.label)} · Data Lab` : pathname === "/certificate" ? `${t({ en: "Certificates", bn: "সনদ" })} · Data Lab` : "Data Lab · ডেটা ল্যাব";
+    document.title = item ? `${t(item.label)} · Data Lab` : "Data Lab · ডেটা ল্যাব";
   }, [pathname, lang]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
 }
@@ -209,7 +211,7 @@ export default function App() {
           </span>
         </NavLink>
         <nav>
-          {NAV.map((n) => (
+          {NAV.filter((n) => n.to !== "/certificate").map((n) => (
             <NavLink key={n.to} to={n.to} viewTransition onMouseEnter={() => prefetch(n.to)} onFocus={() => prefetch(n.to)} onTouchStart={() => prefetch(n.to)}>
               <span className="nav-ico">{n.icon}</span>
               {t(n.label)}
@@ -217,6 +219,9 @@ export default function App() {
           ))}
         </nav>
         <div className="row" style={{ gap: 8 }}>
+          <NavLink to="/certificate" className="nav-cert" viewTransition onMouseEnter={() => prefetch("/certificate")} onFocus={() => prefetch("/certificate")} title={t({ en: "Free certificates", bn: "ফ্রি সনদ" })}>
+            🎓 <span className="nav-cert-txt">{t({ en: "Certificates", bn: "সনদ" })}</span>
+          </NavLink>
           <ThemeSwitch />
           <LangSwitch />
         </div>
@@ -239,6 +244,7 @@ export default function App() {
           </Suspense>
         </ErrorBoundary>
       </main>
+      <CertToast />
       <footer className="site-footer">
         <div className="footer-grid">
           <div>
@@ -262,9 +268,6 @@ export default function App() {
                 {t(n.label)}
               </Link>
             ))}
-            <Link to="/certificate" viewTransition onMouseEnter={() => prefetch("/certificate")}>
-              🎓 {t({ en: "Certificates", bn: "সনদ" })}
-            </Link>
           </div>
           <div>
             <b className="footer-h">{t({ en: "Under the hood", bn: "ভেতরের তথ্য" })}</b>

@@ -3,6 +3,8 @@ import { useLocation } from "react-router-dom";
 import { useLang, type T } from "../i18n";
 import type { Cell } from "../data/generate";
 import { SectionArt, type ArtKind } from "./Art";
+import { CertProgress } from "./CertProgress";
+import type { Track } from "../progress";
 import { PLAIN } from "../content/plain";
 import { digits } from "../numerals";
 
@@ -118,7 +120,7 @@ export function Slider({
   );
 }
 
-export function PageHead({ title, sub, art }: { title: T; sub: T; art?: ArtKind }) {
+export function PageHead({ title, sub, art, track }: { title: T; sub: T; art?: ArtKind; track?: Track }) {
   const { t } = useLang();
   const { pathname } = useLocation();
   return (
@@ -130,6 +132,7 @@ export function PageHead({ title, sub, art }: { title: T; sub: T; art?: ArtKind 
         </div>
         <h1>{t(title)}</h1>
         <p>{t(sub)}</p>
+        {track && <CertProgress track={track} />}
       </div>
       {art && <SectionArt kind={art} />}
     </header>

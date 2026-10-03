@@ -15,8 +15,9 @@ Everything runs in the browser on 8 simulated, Bangladesh-flavoured datasets. Th
 | **🏗️ Data Engineering** | 4 labs: **ETL pipeline** (clean a messy file step by step with quality checks), **star schema** (fact + dimension tables, storage saved, a real business query), **streaming** (live payments, 3-second windows, instant fraud alerts vs a nightly batch), **orchestration** (Airflow-style DAG with parallel tasks, retries, failures, Gantt chart and logs). |
 | **🤖 Machine Learning** | 11 models written from scratch: linear & logistic regression, decision tree, **random forest**, **gradient boosting** (with a model leaderboard), k-NN, k-means, RFM segmentation, a **“bought this, also bought” recommender**, a neural-network playground and forecasting. Missions check your slider settings (best depth, best k, the bank's recall rule). |
 | **✨ AI & LLM** | How an LLM works, tokenizer, embeddings, attention, next-word sampling, **train a tiny GPT live in your browser** (from-scratch transformer + autograd, in a Web Worker, on Bangla text), RAG, an AI agent (text-to-SQL) and prompting. |
-| **📖 Glossary** | Every term in one or two plain sentences, searchable in both languages. |
-| **🎓 Certificates** | Finish a track to unlock a certificate with your name (drawn in the browser): download PNG, print / save PDF, or **Add to LinkedIn profile**. |
+| **📖 Glossary** | Every term in one or two plain sentences, searchable in both languages, plus a **flashcards** mode to test yourself. |
+| **🎓 Certificates** | Finish a track to unlock a certificate with your name (drawn in the browser): download PNG, print / save PDF, or **Add to LinkedIn profile**. Every section shows your certificate progress, and a pop-up congratulates you the moment one unlocks. |
+| **🎯 Today's SQL challenge** | A new challenge on the home page every day. |
 
 Also: **“Find it in the data”** questions in Analysis, **Bangla digits (১২৩)** option in Bangla mode, per-page HTML + sitemap for **search engines**, **GitHub Actions CI** (tests + build on every push), animated sun/moon theme switch with a circular reveal, sliding EN / বাংলা switch (both remembered, applied before the first paint — no flash), cross-fading page transitions, per-browser progress tracking, quizzes, a 404 page, an error safety net, keyboard skip-link and focus styles, and motion that respects “reduce motion”.
 
@@ -104,7 +105,5 @@ Built by **Atiqul Islam Chowdhury** — AI & ML Engineer · Senior Data Scientis
 
 ## Roadmap
 
-- “Check my answer” SQL challenges that compare result sets, shareable query links.
 - Python in the browser (Pyodide) for pandas lessons.
-- A tiny real transformer you can train in the browser; random forest / gradient boosting.
-- Certificates / badges per track.
+- More daily challenges and a weekly streak.
