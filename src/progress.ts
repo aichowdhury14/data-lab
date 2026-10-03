@@ -5,8 +5,8 @@ export const TRACKS = {
   analysis: 5,
   sql: 18,
   engineering: 10,
-  ml: 8,
-  llm: 8,
+  ml: 11,
+  llm: 9,
 } as const;
 export type Track = keyof typeof TRACKS;
 type Progress = Partial<Record<Track, string[]>>;

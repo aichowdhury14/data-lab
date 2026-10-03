@@ -6,6 +6,7 @@ import { mean, median, pearson, std } from "../ml/core";
 import { Bars, BoxPlot, Donut, Heatmap, Lines, Scatter, XY, fmt } from "../components/charts";
 import { Callout, DataTable, PageHead, Plain, Slider, Stat, Tabs } from "../components/ui";
 import { Quiz } from "../components/Quiz";
+import { DataQuestions } from "../components/Missions";
 
 function NoNumbers() {
   const { t } = useLang();
@@ -106,6 +107,7 @@ export default function Analysis() {
       {tab === "compare" &&
         (numCols.length ? <Compare key={dsId} table={dsId} rows={ds.rows} numCols={numCols} catCols={catCols} /> : <NoNumbers />)}
       {tab === "relate" && (numCols.length > 1 ? <Relate key={dsId} rows={ds.rows} numCols={numCols} /> : <NoNumbers />)}
+      <DataQuestions />
       <Quiz id="analysis" />
     </>
   );

@@ -210,6 +210,8 @@ export interface TreeNode {
   n: number;
   pos: number; // how many positives (defaults) reached this node
   leaf: boolean;
+  /** Impurity removed by this split, weighted by rows (used for feature importance). */
+  gain?: number;
   feature?: number;
   threshold?: number;
   left?: TreeNode;
@@ -217,7 +219,8 @@ export interface TreeNode {
 }
 const gini = (pos: number, n: number) => (n ? 1 - (pos / n) ** 2 - (1 - pos / n) ** 2 : 0);
 
-export function buildTree(X: number[][], y: number[], maxDepth: number, minLeaf = 8, depth = 0): TreeNode {
+/** `pickFeatures` (random forests) chooses which features each split may consider; default = all. */
+export function buildTree(X: number[][], y: number[], maxDepth: number, minLeaf = 8, depth = 0, pickFeatures?: () => number[]): TreeNode {
   const n = y.length;
   const pos = sum(y);
   const node: TreeNode = { n, pos, leaf: true };
@@ -225,7 +228,8 @@ export function buildTree(X: number[][], y: number[], maxDepth: number, minLeaf 
 
   let best = { gain: 1e-7, f: -1, t: 0 };
   const parent = gini(pos, n);
-  for (let f = 0; f < X[0].length; f++) {
+  const features = pickFeatures ? pickFeatures() : X[0].map((_, f) => f);
+  for (const f of features) {
     const sorted = [...new Set(X.map((r) => r[f]))].sort((a, b) => a - b);
     const step = Math.max(1, Math.floor(sorted.length / 24));
     for (let i = 0; i + 1 < sorted.length; i += step) {
@@ -253,10 +257,11 @@ export function buildTree(X: number[][], y: number[], maxDepth: number, minLeaf 
     n,
     pos,
     leaf: false,
+    gain: best.gain * n,
     feature: best.f,
     threshold: best.t,
-    left: buildTree(li.map((i) => X[i]), li.map((i) => y[i]), maxDepth, minLeaf, depth + 1),
-    right: buildTree(ri.map((i) => X[i]), ri.map((i) => y[i]), maxDepth, minLeaf, depth + 1),
+    left: buildTree(li.map((i) => X[i]), li.map((i) => y[i]), maxDepth, minLeaf, depth + 1, pickFeatures),
+    right: buildTree(ri.map((i) => X[i]), ri.map((i) => y[i]), maxDepth, minLeaf, depth + 1, pickFeatures),
   };
 }
 export const treeProba = (t: TreeNode, x: number[]): number =>

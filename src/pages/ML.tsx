@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLang, type T } from "../i18n";
-import { customerById, dataset } from "../data/generate";
+import { dataset } from "../data/generate";
 import {
   applyScaler,
   buildTree,
@@ -14,7 +14,6 @@ import {
   linStep,
   mean,
   predictProba,
-  splitIndices,
   std,
   trainLogistic,
   treePath,
@@ -29,17 +28,22 @@ import { roc } from "../ml/extra";
 import { useMark, useProgress } from "../progress";
 import { KNN, NeuralNet, Forecast } from "./MLMore";
 import { RFM } from "./MLRfm";
+import { Boosting, RandomForest, Recommender } from "./MLEnsemble";
 import { Quiz } from "../components/Quiz";
+import { Mission } from "../components/Missions";
 
-type Tab = "linear" | "logistic" | "tree" | "knn" | "kmeans" | "rfm" | "nn" | "forecast";
+type Tab = "linear" | "logistic" | "tree" | "forest" | "boost" | "knn" | "kmeans" | "rfm" | "rec" | "nn" | "forecast";
 
 const MODELS: PickerItem<Tab>[] = [
   { id: "linear", icon: "📈", label: { en: "Linear regression", bn: "লিনিয়ার রিগ্রেশন" }, tag: { en: "guess a number", bn: "একটা সংখ্যা আন্দাজ" } },
   { id: "logistic", icon: "🎯", label: { en: "Logistic regression", bn: "লজিস্টিক রিগ্রেশন" }, tag: { en: "answer yes or no", bn: "হ্যাঁ বা না উত্তর" } },
   { id: "tree", icon: "🌳", label: { en: "Decision tree", bn: "ডিসিশন ট্রি" }, tag: { en: "a game of 20 questions", bn: "২০ প্রশ্নের খেলা" } },
+  { id: "forest", icon: "🌲", label: { en: "Random forest", bn: "র‍্যান্ডম ফরেস্ট" }, tag: { en: "many trees vote", bn: "অনেক ট্রির ভোট" } },
+  { id: "boost", icon: "🚀", label: { en: "Gradient boosting", bn: "গ্রেডিয়েন্ট বুস্টিং" }, tag: { en: "fix mistakes, step by step", bn: "ধাপে ধাপে ভুল সংশোধন" } },
   { id: "knn", icon: "📍", label: { en: "k-nearest neighbours", bn: "k-নিকটতম প্রতিবেশী" }, tag: { en: "ask the neighbours", bn: "প্রতিবেশীকে জিজ্ঞাসা" } },
   { id: "kmeans", icon: "🫧", label: { en: "K-means clustering", bn: "কে-মিনস ক্লাস্টারিং" }, tag: { en: "find groups by itself", bn: "নিজে নিজে দল খোঁজে" } },
   { id: "rfm", icon: "🛍️", label: { en: "RFM customer segments", bn: "RFM গ্রাহক বিভাজন" }, tag: { en: "marketing · who to target", bn: "মার্কেটিং · কাকে টার্গেট করবেন" } },
+  { id: "rec", icon: "🛒", label: { en: "Recommender", bn: "রেকমেন্ডার" }, tag: { en: "bought this, also bought…", bn: "এটা কিনলে, ওটাও…" } },
   { id: "nn", icon: "🧠", label: { en: "Neural network", bn: "নিউরাল নেটওয়ার্ক" }, tag: { en: "the brain behind AI", bn: "এআই-এর মস্তিষ্ক" } },
   { id: "forecast", icon: "🔮", label: { en: "Time-series forecast", bn: "টাইম-সিরিজ পূর্বাভাস" }, tag: { en: "guess the future", bn: "ভবিষ্যৎ আন্দাজ" } },
 ];
@@ -52,24 +56,7 @@ for (const t of dataset("transactions").rows) {
 }
 const SPEND = customers.map((c) => ({ income: (c.monthly_income as number) / 1000, spend: (spendByCustomer.get(c.id as number) ?? 0) / 1000 }));
 
-const FEATURES: T[] = [
-  { en: "credit score", bn: "ক্রেডিট স্কোর" },
-  { en: "loan ÷ yearly income", bn: "ঋণ ÷ বার্ষিক আয়" },
-  { en: "interest rate %", bn: "সুদের হার %" },
-];
-const LOANS = dataset("loans").rows.map((l) => {
-  const c = customerById.get(l.customer_id as number)!;
-  return {
-    x: [c.credit_score as number, (l.amount as number) / ((c.monthly_income as number) * 12), l.interest_rate as number],
-    y: l.defaulted as number,
-  };
-});
-const SPLIT = splitIndices(LOANS.length, 0.25);
-const Xtrain = SPLIT.train.map((i) => LOANS[i].x);
-const ytrain = SPLIT.train.map((i) => LOANS[i].y);
-const Xtest = SPLIT.test.map((i) => LOANS[i].x);
-const ytest = SPLIT.test.map((i) => LOANS[i].y);
-const DEFAULT_RATE = mean(LOANS.map((l) => l.y));
+import { DEFAULT_RATE, FEATURES, Xtest, Xtrain, ytest, ytrain } from "../ml/loanData";
 
 interface Applicant {
   credit: number;
@@ -102,6 +89,9 @@ export default function ML() {
       {tab === "nn" && <NeuralNet />}
       {tab === "forecast" && <Forecast />}
       {tab === "rfm" && <RFM />}
+      {tab === "forest" && <RandomForest />}
+      {tab === "boost" && <Boosting />}
+      {tab === "rec" && <Recommender />}
       </div>
       <Quiz id="ml" />
     </>
@@ -443,6 +433,22 @@ function Logistic({ app, setApp }: { app: Applicant; setApp: (a: Applicant) => v
             <Stat label="p(default)" value={(pApp * 100).toFixed(1) + "%"} />
             <Stat label={t({ en: "decision", bn: "সিদ্ধান্ত" })} value={pApp >= threshold ? t({ en: "Flag", bn: "ঝুঁকিপূর্ণ" }) : t({ en: "Approve", bn: "অনুমোদন" })} />
           </div>
+          <Mission
+            title={{ en: "Mission: the bank's rule", bn: "মিশন: ব্যাংকের নিয়ম" }}
+            goal={{ en: "The bank wants to catch at least 70% of real defaults (recall ≥ 70%) while wrongly flagging as few good borrowers as possible (highest precision). Move the threshold slider.", bn: "ব্যাংক চায় আসল খেলাপির অন্তত ৭০% ধরতে (recall ≥ ৭০%), আর যত কম সম্ভব ভালো ঋণগ্রহীতাকে ভুল করে আটকাতে (সবচেয়ে বেশি precision)। থ্রেশহোল্ড স্লাইডার নাড়ুন।" }}
+            evaluate={() => {
+              let bestP = 0;
+              for (let th = 0.05; th < 0.951; th += 0.05) {
+                const c = confusion(ytest, probs.map((p) => (p >= th ? 1 : 0)));
+                if (c.recall >= 0.7) bestP = Math.max(bestP, c.precision);
+              }
+              if (m.recall < 0.7)
+                return { ok: false, msg: { en: `Recall is only ${(m.recall * 100).toFixed(0)}% — lower the threshold to catch more defaults.`, bn: `recall মাত্র ${(m.recall * 100).toFixed(0)}% — বেশি খেলাপি ধরতে থ্রেশহোল্ড কমান।` } };
+              return m.precision >= bestP - 0.02
+                ? { ok: true, msg: { en: `✅ Spot on: recall ${(m.recall * 100).toFixed(0)}%, precision ${(m.precision * 100).toFixed(0)}% — the best balance for this rule.`, bn: `✅ একদম ঠিক: recall ${(m.recall * 100).toFixed(0)}%, precision ${(m.precision * 100).toFixed(0)}% — এই নিয়মে সেরা ভারসাম্য।` } }
+                : { ok: false, msg: { en: `Recall is fine, but precision could reach ${(bestP * 100).toFixed(0)}%. Try raising the threshold a little.`, bn: `recall ঠিক আছে, কিন্তু precision ${(bestP * 100).toFixed(0)}% পর্যন্ত যেতে পারে। থ্রেশহোল্ড একটু বাড়িয়ে দেখুন।` } };
+            }}
+          />
           <Callout kind="warn" title={{ en: "Precision vs recall trade-off", bn: "প্রিসিশন বনাম রিকল ট্রেড-অফ" }}>
             <p>
               {t({
@@ -550,6 +556,18 @@ function Tree({ app, setApp }: { app: Applicant; setApp: (a: Applicant) => void 
             xOffset={1}
             xLabel={t({ en: "max depth", bn: "সর্বোচ্চ গভীরতা" })}
             h={220}
+          />
+          <Mission
+            title={{ en: "Mission: find the best depth", bn: "মিশন: সেরা গভীরতা খুঁজুন" }}
+            goal={{ en: "Move the depth slider to the setting with the highest TEST accuracy (the orange line).", bn: "গভীরতার স্লাইডারটা সেই জায়গায় নিন যেখানে টেস্ট accuracy (কমলা দাগ) সবচেয়ে বেশি।" }}
+            evaluate={() => {
+              const tests = curve.slice(0, 6).map((c) => c.test);
+              const best = Math.max(...tests);
+              const mine = tests[depth - 1];
+              return mine >= best - 1e-9
+                ? { ok: true, msg: { en: `✅ Yes! Depth ${depth} gives ${(mine * 100).toFixed(1)}% on unseen loans — the best possible here.`, bn: `✅ ঠিক! গভীরতা ${depth}-এ অদেখা ঋণে ${(mine * 100).toFixed(1)}% — এখানে এটাই সেরা।` } }
+                : { ok: false, msg: { en: `Depth ${depth} gives ${(mine * 100).toFixed(1)}%, but ${(best * 100).toFixed(1)}% is possible. Look at the orange line.`, bn: `গভীরতা ${depth}-এ ${(mine * 100).toFixed(1)}%, কিন্তু ${(best * 100).toFixed(1)}% সম্ভব। কমলা দাগটা দেখুন।` } };
+            }}
           />
           <Callout kind="warn" title={{ en: "Overfitting", bn: "ওভারফিটিং" }}>
             <p>

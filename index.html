@@ -53,6 +53,10 @@
       .boot-line { height: 18px; border-radius: 9px; margin: 14px 0; background: linear-gradient(90deg, rgb(127 140 160 / 0.12), rgb(127 140 160 / 0.24), rgb(127 140 160 / 0.12)); background-size: 200% 100%; animation: boot 1.2s linear infinite; }
       @keyframes boot { to { background-position: -200% 0; } }
       @media (prefers-reduced-motion: reduce) { .boot-line { animation: none; } }
+      .boot-h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); line-height: 1.2; margin: 0 0 12px; max-width: 26ch; }
+      .boot-p { font-size: 1.05rem; opacity: 0.75; max-width: 60ch; margin: 0 0 18px; line-height: 1.6; }
+      .boot-nav { margin-top: 18px; font-size: 0.9rem; opacity: 0.7; }
+      .boot-nav a { color: inherit; }
     </style>
   </head>
   <body>

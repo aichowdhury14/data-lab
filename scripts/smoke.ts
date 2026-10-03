@@ -177,6 +177,90 @@ const rounded = compare(res("SELECT department, ROUND(100.0*AVG(left_company),1)
 ok(rounded.ok, "checker: attrition answer with an extra rounded column is accepted");
 ok(sortsResult("SELECT * FROM (SELECT RANK() OVER (ORDER BY x) r FROM t)") === false && sortsResult("SELECT a FROM t ORDER BY a") === true, "checker: ORDER BY inside OVER() is not treated as sorting the result");
 
+// --- SQL challenges
+const { CHALLENGES } = await import("../src/data/challenges");
+for (const c of CHALLENGES) {
+  const sol = c.solutions[0];
+  const r = res(sol);
+  ok(r.rows.length > 0 && compare(r, r, sortsResult(sol)).ok, `challenge "${c.id}": answer returns ${r.rows.length} row(s) and grades itself correct`);
+  const lim = /ORDER BY (.+?)(?: DESC| ASC)? LIMIT (\d+)/i.exec(sol);
+  if (lim) {
+    const n = +lim[2];
+    const wider = res(sol.replace(/LIMIT \d+/i, `LIMIT ${n + 1}`).replace(/^SELECT /i, `SELECT ${lim[1]} AS __k, `)).rows;
+    ok(wider.length <= n || wider[n - 1][0] !== wider[n][0], `challenge "${c.id}": no tie at the LIMIT ${n} cut-off`);
+  }
+  ok(!compare(res("SELECT 1 AS x;"), r, sortsResult(sol)).ok, `challenge "${c.id}": a blank attempt is rejected`);
+}
+
+// --- explain my query
+const { explainSql } = await import("../src/data/explain");
+const allSql = [...LESSONS.map((l) => l.sql), ...LESSONS.flatMap((l) => l.solutions ?? []), ...CHALLENGES.flatMap((c) => c.solutions)];
+const explained = allSql.map((q) => explainSql(q));
+ok(explained.every((s) => s.length >= 2 && s.every((x) => x.text.en && x.text.bn && !/undefined/.test(x.text.en + x.text.bn))), `explain: all ${allSql.length} lesson/challenge queries get 2+ bilingual steps`);
+const titles = (q: string) => explainSql(q).map((s) => s.title.en).join(" | ");
+ok(/JOIN/.test(titles(LESSONS.find((l) => l.id === "join")!.sql)) && /LEFT JOIN/.test(titles(LESSONS.find((l) => l.id === "leftjoin")!.sql)), "explain: JOIN and LEFT JOIN are recognised");
+ok(/WITH/.test(titles(LESSONS.find((l) => l.id === "cte")!.sql)) && /HAVING/.test(titles(LESSONS.find((l) => l.id === "having")!.sql)), "explain: WITH steps and HAVING are recognised");
+ok(/window function/.test(explainSql(LESSONS.find((l) => l.id === "window-rank")!.sql).map((s) => s.text.en).join(" ")), "explain: window functions inside a sub-query are explained");
+ok(["", "   ", "DROP TABLE x;", "select", "SELECT ((", "garbage !!", "SELECT * FROM t; SELECT 2"].every((q) => Array.isArray(explainSql(q))), "explain: odd or broken input never crashes");
+
+// --- ensembles + recommender
+const LD = await import("../src/ml/loanData");
+const EN = await import("../src/ml/ensemble");
+const CORE = await import("../src/ml/core");
+const { roc: rocFn } = await import("../src/ml/extra");
+const single = CORE.buildTree(LD.Xtrain, LD.ytrain, 4);
+const aucTree = rocFn(LD.ytest, LD.Xtest.map((x) => CORE.treeProba(single, x))).auc;
+const forest = EN.trainForest(LD.Xtrain, LD.ytrain, { trees: 40, depth: 5, mtry: 2 });
+const aucForest = rocFn(LD.ytest, LD.Xtest.map((x) => EN.forestProba(forest, x))).auc;
+ok(aucForest > aucTree, `random forest ranks better than one tree (AUC ${aucForest.toFixed(3)} vs ${aucTree.toFixed(3)})`);
+const imp = EN.featureImportance(forest, 3);
+ok(Math.abs(imp.reduce((a, b) => a + b, 0) - 1) < 1e-9 && imp[0] === Math.max(...imp), `feature importance sums to 1 and credit score matters most (${imp.map((v) => v.toFixed(2)).join(", ")})`);
+const gbm = EN.trainGBM(LD.Xtrain, LD.ytrain, { rounds: 60, lr: 0.1, depth: 2 });
+const trainLoss = (r: number) => EN.logLoss(LD.ytrain, LD.Xtrain.map((x) => EN.gbmProba(gbm, x, r)));
+ok(trainLoss(60) < trainLoss(10) && trainLoss(10) < trainLoss(1), `boosting lowers training error round by round (${trainLoss(1).toFixed(3)} → ${trainLoss(10).toFixed(3)} → ${trainLoss(60).toFixed(3)})`);
+ok(rocFn(LD.ytest, LD.Xtest.map((x) => EN.gbmProba(gbm, x))).auc > 0.75, "boosting generalises to unseen loans (AUC > 0.75)");
+const baskets = EN.buildBaskets(DATASETS.find((d) => d.id === "shop_orders")!.rows as never);
+const sim = EN.similar(baskets, "Panjabi", 3);
+ok(sim.length === 3 && sim.every((s) => s.product !== "Panjabi" && s.score > 0 && s.score <= 1), `recommender: Panjabi buyers also buy ${sim.map((s) => s.product).join(", ")}`);
+const recs = EN.recommendFor(baskets, 5, 3);
+ok(recs.every((r) => !baskets.byCustomer.get(5)!.has(r.product) && baskets.byCustomer.get(5)!.has(r.because)), "recommender: never suggests something already bought, and explains why");
+
+// --- tiny GPT: gradients are right, and it learns
+const GPT = await import("../src/llm/tinygpt");
+const { BN_CORPUS } = await import("../src/llm/bnCorpus");
+const { seeded: seededRng } = await import("../src/ml/extra");
+const small = new GPT.TinyGPT(BN_CORPUS, { ctx: 6, d: 8, hidden: 12 }, 3);
+const smallData = small.encode(BN_CORPUS);
+const sIds = smallData.slice(20, 26);
+const sTg = smallData.slice(21, 27);
+const lossNow = () => GPT.crossEntropy(small.forward(sIds).logits, sTg).d[0];
+Object.values(small.params).forEach((p) => p.g.fill(0));
+GPT.backward(GPT.crossEntropy(small.forward(sIds).logits, sTg));
+let worstRel = 0;
+const gr = seededRng(4);
+for (const p of Object.values(small.params))
+  for (let k = 0; k < 5; k++) {
+    const i = Math.floor(gr() * p.d.length);
+    const old = p.d[i];
+    p.d[i] = old + 1e-5;
+    const lp = lossNow();
+    p.d[i] = old - 1e-5;
+    const lm = lossNow();
+    p.d[i] = old;
+    const num = (lp - lm) / 2e-5;
+    if (Math.abs(num) + Math.abs(p.g[i]) > 1e-7) worstRel = Math.max(worstRel, Math.abs(num - p.g[i]) / (Math.abs(num) + Math.abs(p.g[i])));
+  }
+ok(worstRel < 1e-4, `tiny GPT: backprop matches numerical gradients (worst relative error ${worstRel.toExponential(1)})`);
+const gpt = new GPT.TinyGPT(BN_CORPUS);
+const gd = gpt.encode(BN_CORPUS);
+const gr2 = seededRng(5);
+const firstLoss = gpt.trainStep(gd, 8, 3e-3, gr2);
+let lastLoss = firstLoss;
+for (let s = 0; s < 150; s++) lastLoss = gpt.trainStep(gd, 8, 3e-3, gr2);
+ok(lastLoss < firstLoss * 0.7, `tiny GPT: 150 training steps cut the error (${firstLoss.toFixed(2)} → ${lastLoss.toFixed(2)})`);
+const gptAtt = gpt.attention("শিক্ষাই জাতির");
+ok(gptAtt.weights.every((row, i) => Math.abs(row.reduce((a, b) => a + b, 0) - 1) < 1e-9 && row.slice(i + 1).every((w) => w === 0)), "tiny GPT: attention rows sum to 1 and never look at future characters");
+
 db.close();
 console.log(failed ? `\n${failed} FAILED` : "\nall checks passed");
 process.exit(failed ? 1 : 0);

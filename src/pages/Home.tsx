@@ -5,6 +5,7 @@ import { DATASETS, dataset } from "../data/generate";
 import { LESSONS } from "../data/lessons";
 import { DataTicker, HeroConsole } from "../components/HeroConsole";
 import { LiveStats } from "../components/LiveStats";
+import { digits, numeralMode } from "../numerals";
 import { Bars, Donut, Lines, Scatter, XY } from "../components/charts";
 import { TRACKS, resetProgress, useProgress, type Track } from "../progress";
 
@@ -27,8 +28,8 @@ const PATHS: { to: string; track: Track; emoji: string; title: T; body: T; color
     color: "var(--c3)",
     title: { en: "SQL", bn: "এসকিউএল" },
     body: {
-      en: "Ask a database questions with simple, English-like commands. 18 short lessons with instant results.",
-      bn: "ইংরেজির মতো সহজ কমান্ডে ডেটাবেসকে প্রশ্ন করুন। ১৮টা ছোট পাঠ, সাথে সাথে ফলাফল।",
+      en: "Ask a database questions with simple, English-like commands. 18 lessons with answer checking, plus timed challenges.",
+      bn: "ইংরেজির মতো সহজ কমান্ডে ডেটাবেসকে প্রশ্ন করুন। উত্তর যাচাইসহ ১৮টা পাঠ, আর সময় ধরে চ্যালেঞ্জ।",
     },
   },
   {
@@ -49,8 +50,8 @@ const PATHS: { to: string; track: Track; emoji: string; title: T; body: T; color
     color: "var(--c4)",
     title: { en: "Machine Learning", bn: "মেশিন লার্নিং" },
     body: {
-      en: "Teach a computer from examples. 8 models you can play with, including RFM customer segments.",
-      bn: "উদাহরণ দেখিয়ে কম্পিউটারকে শেখান। খেলার মতো চালানো যায় এমন ৮টা মডেল, RFM গ্রাহক বিভাজনসহ।",
+      en: "Teach a computer from examples. 11 models you can play with — from linear regression to random forests, boosting and a recommender.",
+      bn: "উদাহরণ দেখিয়ে কম্পিউটারকে শেখান। খেলার মতো চালানো যায় এমন ১১টা মডেল — লিনিয়ার রিগ্রেশন থেকে র‍্যান্ডম ফরেস্ট, বুস্টিং আর রেকমেন্ডার পর্যন্ত।",
     },
   },
   {
@@ -60,8 +61,8 @@ const PATHS: { to: string; track: Track; emoji: string; title: T; body: T; color
     color: "var(--c7)",
     title: { en: "AI & LLMs", bn: "এআই ও এলএলএম" },
     body: {
-      en: "See what's inside ChatGPT-style AI — tokens, meaning maps, attention, RAG and AI agents.",
-      bn: "ChatGPT-ধরনের এআই-এর ভেতরে কী আছে দেখুন — টোকেন, অর্থের মানচিত্র, অ্যাটেনশন, RAG আর এআই এজেন্ট।",
+      en: "See what's inside ChatGPT-style AI — tokens, attention, RAG, AI agents — and train your own tiny GPT.",
+      bn: "ChatGPT-ধরনের এআই-এর ভেতরে কী আছে দেখুন — টোকেন, অ্যাটেনশন, RAG, এআই এজেন্ট — আর নিজের ছোট GPT ট্রেন করুন।",
     },
   },
 ];
@@ -79,7 +80,7 @@ function CountUp({ to }: { to: number }) {
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [to]);
-  return <>{n.toLocaleString()}</>;
+  return <>{digits(n.toLocaleString("en-US"))}</>;
 }
 
 /**
@@ -257,6 +258,20 @@ export default function Home() {
         })}
       </section>
 
+      <Link to="/certificate" className="card cert-banner">
+        <span className="cb-ico">🎓</span>
+        <span>
+          <b>{t({ en: "Earn a free certificate", bn: "ফ্রি সনদ অর্জন করুন" })}</b>
+          <small>
+            {t({
+              en: "Finish a track and download a certificate with your name — or add it straight to your LinkedIn profile.",
+              bn: "একটা ট্র্যাক শেষ করে নিজের নামে সনদ ডাউনলোড করুন — অথবা সরাসরি লিংকডইন প্রোফাইলে যোগ করুন।",
+            })}
+          </small>
+        </span>
+        <span className="cb-go">→</span>
+      </Link>
+
       <h2>{t({ en: "Never done this before? Follow this path", bn: "আগে কখনো করেননি? এই পথে চলুন" })}</h2>
       <div className="timeline">
         {(
@@ -300,7 +315,7 @@ export default function Home() {
               </p>
             </div>
             <Deferred height={190}>
-              <MiniChart id={d.id} />
+              <MiniChart key={`${d.id}-${numeralMode()}`} id={d.id} />
             </Deferred>
           </div>
         ))}

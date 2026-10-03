@@ -11,13 +11,14 @@ Everything runs in the browser on 8 simulated, Bangladesh-flavoured datasets. Th
 | Section | What the learner does |
 |---|---|
 | **📊 Data Analysis** | Profile a dataset, histograms, group comparisons with bar + box plots, correlation heatmap, trends and donut charts. Download any dataset as CSV, or **upload your own CSV**. |
-| **🗄️ SQL** | 18 lessons on a real SQLite engine (WebAssembly): 7 beginner, 7 intermediate, 4 practice on the newer datasets. **✓ Check my answer** on 16 lessons (forgiving grading, hints, show-solution, solved tracker), **🔗 shareable query links** that open the same lesson, results as table or chart, free playground. |
+| **🗄️ SQL** | 18 lessons on a real SQLite engine (WebAssembly) with **✓ Check my answer** (16 lessons, forgiving grading, hints, solutions, solved tracker), **🧠 Explain** (plain-language, step-by-step breakdown of any query, rule-based), **🎯 SQL challenges** (9 timed puzzles, points, best times), **🔗 shareable links** that reopen the same lesson or challenge, results as table or chart. |
 | **🏗️ Data Engineering** | 4 labs: **ETL pipeline** (clean a messy file step by step with quality checks), **star schema** (fact + dimension tables, storage saved, a real business query), **streaming** (live payments, 3-second windows, instant fraud alerts vs a nightly batch), **orchestration** (Airflow-style DAG with parallel tasks, retries, failures, Gantt chart and logs). |
-| **🤖 Machine Learning** | 8 models written from scratch: linear regression (4 datasets, animated gradient descent), logistic regression (ROC, confusion matrix, threshold), decision tree, k-NN, k-means, **RFM customer segmentation**, a neural-network playground and time-series forecasting. |
-| **✨ AI & LLM** | How an LLM works, tokenizer (English vs Bangla cost), embeddings map + word arithmetic, attention, next-word sampling (temperature / top-k / top-p), RAG, an **AI agent** that answers questions by writing and running SQL, and prompting tips. |
-| **📖 Glossary** | 37 terms in one or two plain sentences, searchable in both languages. |
+| **🤖 Machine Learning** | 11 models written from scratch: linear & logistic regression, decision tree, **random forest**, **gradient boosting** (with a model leaderboard), k-NN, k-means, RFM segmentation, a **“bought this, also bought” recommender**, a neural-network playground and forecasting. Missions check your slider settings (best depth, best k, the bank's recall rule). |
+| **✨ AI & LLM** | How an LLM works, tokenizer, embeddings, attention, next-word sampling, **train a tiny GPT live in your browser** (from-scratch transformer + autograd, in a Web Worker, on Bangla text), RAG, an AI agent (text-to-SQL) and prompting. |
+| **📖 Glossary** | Every term in one or two plain sentences, searchable in both languages. |
+| **🎓 Certificates** | Finish a track to unlock a certificate with your name (drawn in the browser): download PNG, print / save PDF, or **Add to LinkedIn profile**. |
 
-Also: animated sun/moon theme switch with a circular reveal, sliding EN / বাংলা switch (both remembered, applied before the first paint — no flash), cross-fading page transitions, per-browser progress tracking, quizzes, a 404 page, an error safety net, keyboard skip-link and focus styles, and motion that respects “reduce motion”.
+Also: **“Find it in the data”** questions in Analysis, **Bangla digits (১২৩)** option in Bangla mode, per-page HTML + sitemap for **search engines**, **GitHub Actions CI** (tests + build on every push), animated sun/moon theme switch with a circular reveal, sliding EN / বাংলা switch (both remembered, applied before the first paint — no flash), cross-fading page transitions, per-browser progress tracking, quizzes, a 404 page, an error safety net, keyboard skip-link and focus styles, and motion that respects “reduce motion”.
 
 ### Datasets (all simulated)
 `customers` · `transactions` · `loans` · `stock_prices` · `shop_orders` (with Eid sales spikes) · `employees` (attrition) · `dhaka_air` (daily AQI 2024) · `students` (study hours vs score) — 6,752 rows in total, generated from a fixed seed so everyone sees the same numbers.
@@ -54,7 +55,7 @@ select path, lang, count(*) from datalab.visits group by 1, 2 order by 3 desc;  
 npm install
 npm run dev        # http://localhost:5173
 npm run build      # type-check + production build into dist/
-npm test           # 104 checks: every SQL lesson, pipeline, datasets, every ML model, RFM, LLM engine, agent, CSV
+npm test           # 140 checks: every SQL lesson, pipeline, datasets, every ML model, RFM, LLM engine, agent, CSV
 ```
 
 ## Deploy on Vercel

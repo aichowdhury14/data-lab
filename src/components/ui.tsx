@@ -4,6 +4,7 @@ import { useLang, type T } from "../i18n";
 import type { Cell } from "../data/generate";
 import { SectionArt, type ArtKind } from "./Art";
 import { PLAIN } from "../content/plain";
+import { digits } from "../numerals";
 
 export function DataTable({ columns, rows, max = 50 }: { columns: string[]; rows: Cell[][] | unknown[][]; max?: number }) {
   const { t } = useLang();
@@ -24,7 +25,7 @@ export function DataTable({ columns, rows, max = 50 }: { columns: string[]; rows
             <tr key={i}>
               {(r as unknown[]).map((v, j) => (
                 <td key={j} className={num(v) ? "num" : v === null ? "null" : ""}>
-                  {v === null ? "NULL" : num(v) && !Number.isInteger(v) ? (v as number).toFixed(2) : String(v)}
+                  {v === null ? "NULL" : num(v) ? digits(Number.isInteger(v) ? String(v) : (v as number).toFixed(2)) : String(v)}
                 </td>
               ))}
             </tr>
@@ -85,7 +86,7 @@ export function Stat({ label, value, hint }: { label: string; value: string; hin
   return (
     <div className="stat" title={hint}>
       <span>{label}</span>
-      <b>{value}</b>
+      <b>{digits(value)}</b>
     </div>
   );
 }

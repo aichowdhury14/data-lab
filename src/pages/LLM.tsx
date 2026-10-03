@@ -22,9 +22,10 @@ import { HBars, Heatmap, Legend, PALETTE, Scatter, XY } from "../components/char
 import { Callout, PageHead, Picker, Slider, Stat, type PickerItem, Plain } from "../components/ui";
 import { useMark, useProgress } from "../progress";
 import { Agent } from "./LLMAgent";
+import { TrainGPT } from "./LLMTrain";
 import { Quiz } from "../components/Quiz";
 
-type Tab = "overview" | "tokens" | "embed" | "attention" | "generate" | "rag" | "agent" | "prompt";
+type Tab = "overview" | "tokens" | "embed" | "attention" | "generate" | "train" | "rag" | "agent" | "prompt";
 
 const LABS: PickerItem<Tab>[] = [
   { id: "overview", icon: "🗺️", label: { en: "How an LLM works", bn: "এলএলএম কীভাবে কাজ করে" }, tag: { en: "the big picture", bn: "পুরো ছবি" } },
@@ -32,6 +33,7 @@ const LABS: PickerItem<Tab>[] = [
   { id: "embed", icon: "🧭", label: { en: "Embeddings", bn: "এমবেডিং" }, tag: { en: "meaning as numbers", bn: "সংখ্যায় অর্থ" } },
   { id: "attention", icon: "🔦", label: { en: "Attention", bn: "অ্যাটেনশন" }, tag: { en: "who looks at whom", bn: "কে কার দিকে তাকায়" } },
   { id: "generate", icon: "🎲", label: { en: "Next-word sampling", bn: "পরের শব্দ বাছাই" }, tag: { en: "temperature, top-k, top-p", bn: "টেম্পারেচার, top-k, top-p" } },
+  { id: "train", icon: "🏋️", label: { en: "Train a tiny GPT", bn: "ছোট GPT ট্রেন করুন" }, tag: { en: "live, in your browser", bn: "লাইভ, ব্রাউজারেই" } },
   { id: "rag", icon: "📚", label: { en: "RAG", bn: "RAG" }, tag: { en: "answer from your documents", bn: "নিজের ডকুমেন্ট থেকে উত্তর" } },
   { id: "agent", icon: "🤖", label: { en: "AI agent", bn: "এআই এজেন্ট" }, tag: { en: "think → use tools → answer", bn: "ভাবা → টুল → উত্তর" } },
   { id: "prompt", icon: "💬", label: { en: "Prompting & limits", bn: "প্রম্পটিং ও সীমাবদ্ধতা" }, tag: { en: "write better prompts", bn: "ভালো প্রম্পট লেখা" } },
@@ -59,6 +61,7 @@ export default function LLM() {
         {tab === "attention" && <Attention />}
         {tab === "generate" && <Generate />}
         {tab === "rag" && <Rag />}
+        {tab === "train" && <TrainGPT />}
         {tab === "agent" && <Agent />}
         {tab === "prompt" && <Prompting />}
       </div>

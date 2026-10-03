@@ -5,6 +5,7 @@ import { applyScaler, fitScaler, mean, splitIndices, type Pt } from "../ml/core"
 import { forecast, knn, mae, mape, netForward, netInit, netTrain, toyData, type Method, type Net, type Toy } from "../ml/extra";
 import { HBars, Lines, Scatter, XY, fmt } from "../components/charts";
 import { Callout, Slider, Stat, Plain } from "../components/ui";
+import { Mission } from "../components/Missions";
 
 // ---- k-nearest neighbours ----------------------------------------------------------
 const KNN_RAW: Pt[] = [];
@@ -121,6 +122,23 @@ export function KNN() {
             markers={[{ x: k, y: accByK.reduce((best, a) => (Math.abs(a.k - k) < Math.abs(best.k - k) ? a : best)).acc }]}
             xLabel="k"
             h={220}
+          />
+          <Mission
+            title={{ en: "Mission: the best k", bn: "মিশন: সেরা k" }}
+            goal={{ en: "Find the k (number of neighbours) that predicts unseen loans most accurately.", bn: "এমন k (প্রতিবেশীর সংখ্যা) খুঁজুন যা অদেখা ঋণ সবচেয়ে নির্ভুলভাবে অনুমান করে।" }}
+            evaluate={() => {
+              const accFor = (kk: number) => mean(KSPLIT.test.map((i) => ((knn(KTR, KTRY, KZ[i], kk).p >= 0.5 ? 1 : 0) === KNN_Y[i] ? 1 : 0)));
+              let best = 0;
+              let bestK = 1;
+              for (let kk = 1; kk <= 41; kk += 2) {
+                const a = accFor(kk);
+                if (a > best) [best, bestK] = [a, kk];
+              }
+              const mine = accFor(k);
+              return mine >= best - 0.005
+                ? { ok: true, msg: { en: `✅ k = ${k} reaches ${(mine * 100).toFixed(1)}% — as good as it gets.`, bn: `✅ k = ${k}-এ ${(mine * 100).toFixed(1)}% — এর চেয়ে ভালো হয় না।` } }
+                : { ok: false, msg: { en: `k = ${k} gives ${(mine * 100).toFixed(1)}%. Something near k = ${bestK} does better — watch the accuracy chart.`, bn: `k = ${k}-এ ${(mine * 100).toFixed(1)}%। k = ${bestK}-এর কাছাকাছি কিছু আরও ভালো — accuracy চার্টটা দেখুন।` } };
+            }}
           />
           <Callout kind="idea" title={{ en: "Small k vs big k", bn: "ছোট k বনাম বড় k" }}>
             <p>

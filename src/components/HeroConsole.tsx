@@ -2,6 +2,8 @@ import { memo, useEffect, useMemo, useState } from "react";
 import { dataset } from "../data/generate";
 import { mean, pearson } from "../ml/core";
 import { fmt } from "./charts";
+import { useLang } from "../i18n";
+import { digits } from "../numerals";
 
 // A fake SQL console for the hero: it "types" a real query, then shows the real answer (computed in JS,
 // so the home page doesn't need to download the SQLite engine).
@@ -52,6 +54,7 @@ function buildDemos(): Demo[] {
 const reduceMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 export const HeroConsole = memo(function HeroConsole() {
+  useLang(); // re-render when the digit style changes
   const demos = useMemo(buildDemos, []);
   const [i, setI] = useState(0);
   const [typed, setTyped] = useState(0);
@@ -116,6 +119,7 @@ export const HeroConsole = memo(function HeroConsole() {
 });
 
 export const DataTicker = memo(function DataTicker() {
+  useLang(); // re-render when the digit style changes
   const facts = useMemo(() => {
     const air = groupSum("dhaka_air", "month", (r) => r.aqi as number, "avg");
     const jan = air.find((a) => a[0] === "Jan")![1];
@@ -144,7 +148,7 @@ export const DataTicker = memo(function DataTicker() {
       <div className="ticker-track">
         {[...facts, ...facts].map((f, i) => (
           <span key={i}>
-            <i>▸</i> {f}
+            <i>▸</i> {digits(f)}
           </span>
         ))}
       </div>

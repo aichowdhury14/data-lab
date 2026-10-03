@@ -1,6 +1,7 @@
 import { memo, useSyncExternalStore } from "react";
 import { useLang } from "../i18n";
 import type { LiveStats as Stats } from "../live/visits";
+import { digits } from "../numerals";
 
 // A tiny store shared by every badge on the page.
 let state: Stats = { status: "loading" };
@@ -28,7 +29,7 @@ export function startLiveStats() {
   else setTimeout(go, 1200);
 }
 
-const n = (v?: number) => (v === undefined ? "—" : v.toLocaleString("en-US"));
+const n = (v?: number) => (v === undefined ? "—" : digits(v.toLocaleString("en-US")));
 const plural = (v: number | undefined, one: string, many: string) => (v === 1 ? one : many);
 
 /** "👁 1,284 views · 🟢 3 online now" — live from Supabase. Hides itself if the counter can't be reached. */

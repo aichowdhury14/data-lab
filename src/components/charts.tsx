@@ -1,11 +1,16 @@
 // Tiny SVG chart set. No chart library: the bundle stays small and everything is themeable via CSS variables.
 import { useId, useState, type MouseEvent, type ReactNode } from "react";
+import { digits } from "../numerals";
 
 export const PALETTE = ["var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c5)", "var(--c6)", "var(--c7)", "var(--c8)"];
 
 const M = { l: 52, r: 14, t: 12, b: 38 };
 
+/** Short human number (1.2k, 3.4L, 2.1Cr), in Bangla digits when that mode is on. */
 export function fmt(n: number) {
+  return digits(fmtLatin(n));
+}
+function fmtLatin(n: number) {
   if (!isFinite(n)) return "–";
   const a = Math.abs(n);
   if (a >= 1e7) return (n / 1e7).toFixed(1) + "Cr";
@@ -274,7 +279,7 @@ export function HBars({
           <div className="track">
             <div className="fill" style={{ width: `${Math.max(0, (it.value / m) * 100)}%`, background: it.color ?? "var(--c1)" }} />
           </div>
-          <b>{format(it.value)}</b>
+          <b>{digits(format(it.value))}</b>
         </div>
       ))}
     </div>
@@ -433,7 +438,7 @@ export function Donut({ items, size = 220, center }: { items: { label: string; v
           />
         ))}
         <text x={size / 2} y={size / 2 - 4} textAnchor="middle" className="donut-big">
-          {shown === null ? center ?? fmt(total) : ((items[shown].value / total) * 100).toFixed(1) + "%"}
+          {shown === null ? digits(center ?? fmt(total)) : digits(((items[shown].value / total) * 100).toFixed(1) + "%")}
         </text>
         <text x={size / 2} y={size / 2 + 16} textAnchor="middle" className="tick">
           {shown === null ? "" : items[shown].label}
@@ -443,7 +448,7 @@ export function Donut({ items, size = 220, center }: { items: { label: string; v
         {items.map((it, i) => (
           <span key={it.label} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} className={hover === i ? "on" : ""}>
             <i style={{ background: PALETTE[i % PALETTE.length] }} />
-            {it.label} <b>{((it.value / total) * 100).toFixed(0)}%</b>
+            {it.label} <b>{digits(((it.value / total) * 100).toFixed(0) + "%")}</b>
           </span>
         ))}
       </div>
@@ -502,7 +507,7 @@ export function Heatmap({
                 </rect>
                 {cell >= 40 && (
                   <text x={left + j * cell + cell / 2} y={top + i * ch + ch / 2 + 4} textAnchor="middle" className="cell-txt" style={{ fill: pct > 55 ? "#fff" : "var(--text)" }}>
-                    {format(v)}
+                    {digits(format(v))}
                   </text>
                 )}
               </g>

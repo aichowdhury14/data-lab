@@ -16,6 +16,7 @@ const PAGES: Record<string, () => Promise<{ default: React.ComponentType }>> = {
   "/ml": () => import("./pages/ML"),
   "/llm": () => import("./pages/LLM"),
   "/glossary": () => import("./pages/Glossary"),
+  "/certificate": () => import("./pages/Certificate"),
 };
 const Analysis = lazy(PAGES["/analysis"]);
 const Sql = lazy(PAGES["/sql"]);
@@ -23,6 +24,7 @@ const Engineering = lazy(PAGES["/engineering"]);
 const ML = lazy(PAGES["/ml"]);
 const LLM = lazy(PAGES["/llm"]);
 const Glossary = lazy(PAGES["/glossary"]);
+const Certificate = lazy(PAGES["/certificate"]);
 const prefetch = (to: string) => void PAGES[to]?.().catch(() => {});
 
 export const NAV: { to: string; icon: string; label: T }[] = [
@@ -76,8 +78,19 @@ const ThemeSwitch = memo(function ThemeSwitch() {
 
 /** EN / বাংলা segmented switch with a sliding highlight. */
 const LangSwitch = memo(function LangSwitch() {
-  const { lang, setLang } = useLang();
+  const { lang, setLang, bnDigits, setBnDigits, t } = useLang();
   return (
+    <>
+    {lang === "bn" && (
+      <button
+        className={`digit-switch${bnDigits ? " on" : ""}`}
+        onClick={() => setBnDigits(!bnDigits)}
+        aria-pressed={bnDigits}
+        title={t({ en: "Bangla digits", bn: bnDigits ? "ইংরেজি সংখ্যা দেখান (123)" : "বাংলা সংখ্যা দেখান (১২৩)" })}
+      >
+        {bnDigits ? "১২৩" : "123"}
+      </button>
+    )}
     <div className={`lang-switch ${lang}`} role="group" aria-label="Language">
       <span className="ls-pill" aria-hidden />
       <button aria-pressed={lang === "en"} onClick={() => lang !== "en" && setLang("en")}>
@@ -87,6 +100,7 @@ const LangSwitch = memo(function LangSwitch() {
         বাংলা
       </button>
     </div>
+    </>
   );
 });
 
@@ -113,7 +127,7 @@ function RouteEffects() {
   }, [pathname]);
   useEffect(() => {
     const item = NAV.find((n) => n.to === pathname);
-    document.title = item ? `${t(item.label)} · Data Lab` : "Data Lab · ডেটা ল্যাব";
+    document.title = item ? `${t(item.label)} · Data Lab` : pathname === "/certificate" ? `${t({ en: "Certificates", bn: "সনদ" })} · Data Lab` : "Data Lab · ডেটা ল্যাব";
   }, [pathname, lang]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
 }
@@ -219,6 +233,7 @@ export default function App() {
               <Route path="/ml" element={<ML />} />
               <Route path="/llm" element={<LLM />} />
               <Route path="/glossary" element={<Glossary />} />
+              <Route path="/certificate" element={<Certificate />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
@@ -247,6 +262,9 @@ export default function App() {
                 {t(n.label)}
               </Link>
             ))}
+            <Link to="/certificate" viewTransition onMouseEnter={() => prefetch("/certificate")}>
+              🎓 {t({ en: "Certificates", bn: "সনদ" })}
+            </Link>
           </div>
           <div>
             <b className="footer-h">{t({ en: "Under the hood", bn: "ভেতরের তথ্য" })}</b>

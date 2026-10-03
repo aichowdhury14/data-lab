@@ -402,3 +402,362 @@ html[lang="bn"] .live-stats {
     transform: translateY(-70px) translateX(calc((var(--x) - 50%) * 0.3)) rotate(320deg);
   }
 }
+
+/* ---- Bangla digits toggle ---- */
+.digit-switch {
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--muted);
+  border-radius: 99px;
+  padding: 0.2rem 0.6rem;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.digit-switch.on {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* ---- SQL challenges ---- */
+.score-pill {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 0.25rem 0.8rem;
+  background: var(--card);
+}
+.score-pill b {
+  color: var(--accent);
+}
+.ch-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.6rem 0 0.9rem;
+}
+.ch-chip {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 10px;
+  border: 2px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.ch-chip:hover {
+  transform: translateY(-2px);
+}
+.ch-chip.easy {
+  border-color: color-mix(in srgb, var(--c3) 55%, var(--line));
+}
+.ch-chip.medium {
+  border-color: color-mix(in srgb, var(--c5) 60%, var(--line));
+}
+.ch-chip.hard {
+  border-color: color-mix(in srgb, var(--c2) 60%, var(--line));
+}
+.ch-chip.on {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.ch-chip.done {
+  background: color-mix(in srgb, var(--good) 16%, var(--card));
+  color: var(--good);
+}
+.ch-card {
+  border-left: 4px solid var(--c3);
+  margin-bottom: 1rem;
+}
+.ch-card.medium {
+  border-left-color: var(--c5);
+}
+.ch-card.hard {
+  border-left-color: var(--c2);
+}
+.badge.ch-easy {
+  background: color-mix(in srgb, var(--c3) 18%, var(--bg));
+  color: var(--c3);
+}
+.badge.ch-medium {
+  background: color-mix(in srgb, var(--c5) 20%, var(--bg));
+  color: var(--c5);
+}
+.badge.ch-hard {
+  background: color-mix(in srgb, var(--c2) 18%, var(--bg));
+  color: var(--c2);
+}
+.ch-q {
+  font-size: 1.12rem;
+  font-weight: 600;
+  margin: 0.7rem 0 0.4rem;
+}
+.ch-timer {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  color: var(--accent);
+}
+.ch-timer.stopped {
+  color: var(--good);
+}
+.ch-timer small {
+  color: var(--muted);
+}
+.hint-msg {
+  margin: 0.6rem 0 0;
+  padding: 0.45rem 0.75rem;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  animation: fadeUp 0.3s both;
+}
+
+/* ---- explain my query ---- */
+.btn.ghost.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.explain {
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--c4);
+  animation: fadeUp 0.3s both;
+}
+.explain-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0.8rem 0 0;
+  display: grid;
+  gap: 0.55rem;
+  counter-reset: ex;
+}
+.explain-steps li {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  animation: fadeUp 0.35s both;
+}
+.explain-steps li:nth-child(2) { animation-delay: 0.05s; }
+.explain-steps li:nth-child(3) { animation-delay: 0.1s; }
+.explain-steps li:nth-child(4) { animation-delay: 0.15s; }
+.explain-steps li:nth-child(5) { animation-delay: 0.2s; }
+.explain-steps li:nth-child(6) { animation-delay: 0.25s; }
+.ex-ico {
+  font-size: 1.15rem;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+.explain-steps p {
+  margin: 0.1rem 0 0;
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+.explain-steps code {
+  color: var(--text);
+}
+
+/* ---- missions & data questions ---- */
+.mission {
+  border: 1px dashed color-mix(in srgb, var(--c4) 55%, var(--line));
+  background: color-mix(in srgb, var(--c4) 6%, var(--card));
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  margin: 0.9rem 0;
+}
+.mission.done {
+  border-style: solid;
+  border-color: var(--good);
+}
+.mission-head {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+.mission-ico {
+  font-size: 1.3rem;
+}
+.mission-head p {
+  margin: 0.1rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.mission .row .check-msg {
+  margin: 0;
+  flex: 1 1 260px;
+}
+.data-q {
+  margin-top: 2rem;
+  border-top: 4px solid var(--c1);
+}
+.dq-q {
+  font-size: 1.08rem;
+  font-weight: 600;
+  margin: 0.8rem 0 0.2rem;
+}
+
+/* ---- ensembles & recommender ---- */
+.votes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0.5rem 0;
+}
+.votes span {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  animation: fadeUp 0.3s both;
+}
+.votes .yes {
+  background: var(--c2);
+}
+.votes .no {
+  background: var(--c3);
+}
+.rec-list {
+  padding-left: 1.2rem;
+  margin: 0.4rem 0 0.8rem;
+}
+.rec-list li {
+  margin: 0.3rem 0;
+}
+
+/* ---- tiny GPT ---- */
+.gpt-samples {
+  display: grid;
+  gap: 0.3rem;
+  max-height: 300px;
+  overflow: auto;
+}
+.gpt-line {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 0.5rem;
+  align-items: baseline;
+  font-size: 0.98rem;
+  padding: 0.25rem 0.45rem;
+  border-radius: 8px;
+  opacity: 0.6;
+  animation: fadeUp 0.3s both;
+}
+.gpt-line small {
+  font-family: var(--mono);
+  color: var(--muted);
+}
+.gpt-line b {
+  color: var(--c4);
+}
+.gpt-line.latest {
+  opacity: 1;
+  background: color-mix(in srgb, var(--c4) 9%, transparent);
+}
+.gpt-line.mine {
+  opacity: 1;
+  border-left: 3px solid var(--accent);
+}
+
+/* ---- certificates ---- */
+.cert-tracks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 0.6rem;
+}
+.cert-track {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.cert-track:disabled {
+  cursor: default;
+  opacity: 0.8;
+}
+.cert-track.ok:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+.cert-track.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.ct-ico {
+  font-size: 1.5rem;
+}
+.ct-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.ct-txt small {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.cert-maker {
+  margin-top: 1.4rem;
+}
+.cert-name {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-width: 420px;
+  margin-bottom: 0.9rem;
+}
+.cert-name span {
+  font-weight: 600;
+}
+.cert-name input {
+  font-size: 1.05rem;
+  padding: 0.55rem 0.8rem;
+}
+.cert-preview canvas {
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: var(--shadow), 0 20px 50px -30px rgb(8 40 80 / 0.5);
+  animation: fadeUp 0.4s both;
+}
+.cert-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.6rem;
+  text-decoration: none;
+  color: inherit;
+  border-left: 4px solid var(--c5);
+  transition: transform 0.2s, border-color 0.2s;
+}
+.cert-banner:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+.cert-banner small {
+  display: block;
+  color: var(--muted);
+}
+.cb-ico {
+  font-size: 2rem;
+}
+.cb-go {
+  margin-left: auto;
+  font-size: 1.4rem;
+  color: var(--accent);
+}
